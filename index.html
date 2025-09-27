@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="description" content="Convert logical formulas and generate their syntax trees. Structuralize pure C-N formulas, pure D-proofs, and index-based summaries of pure D-proofs into a universal representation that is based on the Standard Galactic Alphabet and digits of the Alteran language of the Stargate franchise.">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#171717">
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300..700&display=swap" rel="stylesheet">
+<style>body,button,input,textarea{line-height:inherit}a,button,input,textarea{color:inherit}body,h1,h2,h3,h4,h5,h6,p{margin:0}*{box-sizing:border-box;border:0 solid #e5e7eb}h1,h2,h3,h4,h5,h6{font-size:inherit}code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}.mx-auto{margin-left:auto;margin-right:auto}.max-w-7xl{max-width:80rem}.tracking-widest{letter-spacing:.1em}body,h1{color:rgb(245 245 245)}body{background-color:rgb(23 23 23)}[type=button],[type=reset],[type=submit],button{background-color:transparent;background-image:none}.dedicatedButton,.innerButton,input,textarea{background-color:rgba(64,64,64,.4)}button:hover{background-color:rgba(64,64,64,.8)}.place-items-center{place-items:center}.h-6{height:1.5rem}.h-7{height:1.75rem}.w-10{width:2.5rem}.h-10{height:2.5rem}.w-14{width:3.5rem}.h-14{height:3.5rem}.rounded-lg{border-radius:.5rem}.top-2{top:.5rem}.right-2{right:.5rem}.right-12{right:3rem}.flex-1{flex:1 1 0}.h-full{height:100%}.relative{position:relative}.self-center{align-self:center}.gap-x-2{column-gap:.5rem}.absolute{position:absolute}.border{border-width:1px}.w-full{width:100%}.p-4{padding:1rem}button,input,textarea{font-family:inherit}svg{vertical-align:middle}[role=button],button{cursor:pointer}.input button:hover{transform:scale(1.05)}.flex-col{flex-direction:column}.min-h-screen{min-height:100vh}.flex{display:flex}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:Comfortaa,sans-serif,ui-sans-serif,system-ui,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji;font-feature-settings:normal}h1{line-height:1;font-size:3rem}.mt-1{margin-top:.25rem}@media (min-width:640px){.sm\:px-6{padding-left:1.5rem;padding-right:1.5rem}}@media (min-width:768px){.md\:w-4\/5{width:80%}.md\:text-lg{font-size:1.125rem;line-height:1.75rem}}@media (min-width:1024px){.lg\:mb-16{margin-bottom:4rem}.lg\:mt-8{margin-top:2rem}}.actR:active{color:#f00}.actB:active{color:#57b9ff}.actG:active{color:#0f0}</style>
+<style>.txtIn{width:30px;height:16px;font-size:8pt;text-align:center}.mt4{margin-top:4px}.cs{text-align:center;line-height:1.1;font-size:8pt}.ls{line-height:1.2;font-size:8pt}a{color:#57b9ff;text-decoration:none}a:hover{text-decoration:underline}summary{cursor:pointer}</style>
+<script src="DlFormula.js"></script>
+<script src="DlCore.js"></script>
+<script src="FctHelper.js"></script>
+<script src="GalacticSvgGenerator.js"></script>
+<script src="LayoutTreeNode.js"></script>
+<script src="LayoutTreeEngine.js"></script>
+<script src="SvgTreeEngine.js"></script>
+<script src="TreeNodeAdapter.js"></script>
+<script>
+function parseInputNum(s, name, pos) {
+	let n = parseInt(s);
+	if (pos && !n)
+		throw `invalid ${name}`;
+	return n;
+}
+const getFontHeigth = () => { return parseInputNum(document.getElementById("txtFontEm").value, "font height", true); };
+const getPaddingL = () => { return parseInputNum(document.getElementById("txtPaddingLeft").value, "padding left", false); };
+const getPaddingT = () => { return parseInputNum(document.getElementById("txtPaddingTop").value, "padding top", false); };
+const getPaddingR = () => { return parseInputNum(document.getElementById("txtPaddingRight").value, "padding right", false); };
+const getPaddingB = () => { return parseInputNum(document.getElementById("txtPaddingBottom").value, "padding bottom", false); };
+const getDebug = () => { return document.getElementById("chkDebug").checked; };
+const getPlain = () => { return document.getElementById("chkPlain").checked; };
+const getCentered = () => { return document.getElementById("chkCentered").checked; };
+const getDotted = () => { return document.getElementById("chkDotted").checked; };
+const intervalIds = new Map();
+const intervalHits = new Map();
+function scrollToZero(txt) { // Scroll to (0,0) ; make multiple delayed calls to scrollTo() in order to work around a bug in Firefox
+	const txtId = txt.getAttribute('id');
+	intervalHits.set(txtId, 0);
+	intervalIds.set(txtId, window.setInterval(function(txt, txtId, debug) { // Set interval for checking
+		let c = intervalHits.get(txtId);
+		intervalHits.set(txtId, ++c);
+		txt.scrollTo(0, 0);
+		if (c >= 5 && txt.scrollTop === 0 && txt.scrollLeft === 0) { // repeat at least 5 times
+			intervalHits.delete(txtId);
+			let intervalId = intervalIds.get(txtId);
+			if (debug)
+				console.log(`Terminating interval ID ${intervalId} for ${txtId}.`);
+			if (intervalId === undefined)
+				throw `intervalId for "${txtId}" is undefined`;
+			else
+				window.clearInterval(intervalId); // stop
+		}
+	}, 10, txt, txtId, getDebug())); // repeat every 10 milliseconds
+}
+function setTxt(txt, s) {
+	txt.focus();
+	txt.selectionStart = 0;
+	txt.selectionEnd = txt.value.length;
+	document.execCommand("insertText", false, s);
+	scrollToZero(txt);
+}
+function setTxtRaw(txt, s) {
+	txt.value = s;
+	scrollToZero(txt);
+}
+function fetchSample(url, action) {
+	fetch(url).then(res => res.text()).then(s => {
+		action(s);
+	}).catch((e) => console.error(e));
+}
+function registerSample(id, url) {
+	document.getElementById(id).addEventListener("click", function() { fetchSample(url, s => {
+		let axioms = [];
+		let rules = [];
+		GalacticSvgGenerator.readProofSummary(axioms, rules, s);
+		if (axioms.length === 0)
+			throw "axioms empty";
+		const featuredFormula = axioms[0][0];
+		let featuredProof = "";
+		for (const a of rules)
+			if (featuredProof.length < a[2].length)
+				featuredProof = a[2];
+		setTxt(txtInputProofSummary, s);
+		setTxt(txtInputDProof, featuredProof);
+		setTxt(txtInputNormal, featuredFormula);
+	}); });
+}
+function setSyntaxTree(syntaxTree, divTarget, txtTarget) {
+		let _svgTreeEngine = new SvgTreeEngine();
+		_svgTreeEngine.execute(syntaxTree, SvgTreeEngine.operatorSvgData, "\\");
+		const svgSyntaxTree = _svgTreeEngine.getSvgFile();
+		divTarget.innerHTML = svgSyntaxTree;
+		setTxtRaw(txtTarget, svgSyntaxTree);
+}
+
+window.onload = function() {
+	const error = document.getElementById("error");
+	const inputNormal = document.getElementById('inputNormal');
+	const txtInputNormal = document.getElementById("txtInputNormal");
+	const btnClearNormal = document.getElementById("btnClearNormal");
+	const btnCopyNormal = document.getElementById("btnCopyNormal");
+	const btnApplyNormal = document.getElementById("btnApplyNormal");
+	const inputDotted = document.getElementById('inputDotted');
+	const txtInputDotted = document.getElementById("txtInputDotted");
+	const btnClearDotted = document.getElementById("btnClearDotted");
+	const btnCopyDotted = document.getElementById("btnCopyDotted");
+	const btnApplyDotted = document.getElementById("btnApplyDotted");
+	const txtInfixFormula = document.getElementById("txtInfixFormula");
+	const btnClearInfixFormula = document.getElementById("btnClearInfixFormula");
+	const btnCopyInfixFormula = document.getElementById("btnCopyInfixFormula");
+	const targetSvgSyntaxTree = document.getElementById("targetSvgSyntaxTree");
+	const txtSvgSyntaxTree = document.getElementById("txtSvgSyntaxTree");
+	const btnClearSvgSyntaxTree = document.getElementById("btnClearSvgSyntaxTree");
+	const btnCopySvgSyntaxTree = document.getElementById("btnCopySvgSyntaxTree");
+	const inputDProof = document.getElementById('inputDProof');
+	const txtInputDProof = document.getElementById("txtInputDProof");
+	const btnClearDProof = document.getElementById("btnClearDProof");
+	const btnCopyDProof = document.getElementById("btnCopyDProof");
+	const btnApplyDProof = document.getElementById("btnApplyDProof");
+	const inputProofSummary = document.getElementById('inputProofSummary');
+	const txtInputProofSummary = document.getElementById("txtInputProofSummary");
+	const btnClearProofSummary = document.getElementById("btnClearProofSummary");
+	const btnCopyProofSummary = document.getElementById("btnCopyProofSummary");
+	const btnApplyProofSummary = document.getElementById("btnApplyProofSummary");
+	const targetSvgStructural = document.getElementById("targetSvgStructural");
+	const txtSvgStructural = document.getElementById("txtSvgStructural");
+	const btnClearSvgStructural = document.getElementById("btnClearSvgStructural");
+	const btnCopySvgStructural = document.getElementById("btnCopySvgStructural");
+
+	registerSample("btnExM", "https://xamidi.github.io/pmGenerator/data/m.txt");
+	registerSample("btnExW1", "https://xamidi.github.io/pmGenerator/data/w1.txt");
+	registerSample("btnExW2", "https://xamidi.github.io/pmGenerator/data/w2.txt");
+	registerSample("btnExW3", "https://xamidi.github.io/pmGenerator/data/w3.txt");
+	registerSample("btnExW4", "https://xamidi.github.io/pmGenerator/data/w4.txt");
+	registerSample("btnExW5", "https://xamidi.github.io/pmGenerator/data/w5.txt");
+	registerSample("btnExW6", "https://xamidi.github.io/pmGenerator/data/w6.txt");
+
+	// Formulas to illustrate syntax tree capabilities
+	document.getElementById("btnExF").addEventListener("click", function() {
+		setTxt(txtInputNormal, "GEBSUK<abc><xyz>O<äÄ><öÖ>D<üÜ>L<ßẞ>AFJ<S0>X<x\\_1\\_2\\_3>N<\\alpha\\_i>Z<X>PMC<tiny_text>V");
+		setTxt(txtInputDotted, "GEBSUK\\alpha.\\betaO\\gamma.\\deltaD\\epsilonL\\xiAFJ\\phi\\chi\\psiX\\theta\\tau\\etaN\\zeta\\sigmaZ\\rho\\muPMC\\lambda\\kappaV");
+	});
+
+	// Formulas in normal Polish notation
+	btnClearNormal.addEventListener("click", function() {
+		txtInputNormal.focus();
+		txtInputNormal.selectionStart = 0;
+		txtInputNormal.selectionEnd = txtInputNormal.value.length;
+		document.execCommand("delete", null, false);
+		error.style.display = "none";
+	});
+	btnCopyNormal.addEventListener("click", function() {
+		navigator.clipboard.writeText(txtInputNormal.value);
+	});
+	btnApplyNormal.addEventListener("click", function() {
+		const inputString = txtInputNormal.value;
+		try {
+			let cNode = { value: null };
+			if (DlCore.fromPolishNotation(cNode, inputString, false, true)) {
+				setTxt(txtInputDotted, DlCore.toPolishNotation_numVars(cNode.value));
+				let svg = GalacticSvgGenerator.fromFormula(getFontHeigth(), inputString, "svg1", getPlain(), true, getPaddingL(), getPaddingT(), getPaddingR(), getPaddingB(), getDebug());
+				setTxtRaw(txtInfixFormula, DlCore.formulaRepresentation_unicode(cNode.value));
+				setSyntaxTree(cNode.value, targetSvgSyntaxTree, txtSvgSyntaxTree);
+				setTxtRaw(txtSvgStructural, svg);
+				targetSvgStructural.innerHTML = svg;
+				if (svg === undefined)
+					console.log("Note: Failed to convert '" + inputString + "' into galactic format.");
+				error.style.display = "none";
+			} else
+				throw "conversion failed";
+		} catch (e) {
+			console.error(e);
+			console.error("Failed to parse '" + inputString + "'.");
+			error.style.display = "block";
+		}
+	});
+	inputNormal.addEventListener('keypress', function(e) {
+		if (e.key === 'Enter')
+			btnApplyNormal.click();
+	});
+
+	// Formulas in dotted Polish notation
+	btnClearDotted.addEventListener("click", function() {
+		txtInputDotted.focus();
+		txtInputDotted.selectionStart = 0;
+		txtInputDotted.selectionEnd = txtInputDotted.value.length;
+		document.execCommand("delete", null, false);
+		error.style.display = "none";
+	});
+	btnCopyDotted.addEventListener("click", function() {
+		navigator.clipboard.writeText(txtInputDotted.value);
+	});
+	btnApplyDotted.addEventListener("click", function() {
+		const inputString = txtInputDotted.value;
+		try {
+			let cNode = { value: null };
+			if (DlCore.fromPolishNotation_noRename(cNode, inputString, false, true)) {
+				setTxt(txtInputNormal, DlCore.toPolishNotation(cNode.value));
+				let svg = GalacticSvgGenerator.fromFormula(getFontHeigth(), inputString, "svg1", getPlain(), false, getPaddingL(), getPaddingT(), getPaddingR(), getPaddingB(), getDebug());
+				setTxtRaw(txtInfixFormula, DlCore.formulaRepresentation_unicode(cNode.value));
+				setSyntaxTree(cNode.value, targetSvgSyntaxTree, txtSvgSyntaxTree);
+				setTxtRaw(txtSvgStructural, svg);
+				targetSvgStructural.innerHTML = svg;
+				if (svg === undefined)
+					console.log("Note: Failed to convert '" + inputString + "' into galactic format.");
+				error.style.display = "none";
+			} else
+				throw "conversion failed";
+		} catch (e) {
+			console.error(e);
+			console.error("Failed to parse '" + inputString + "'.");
+			error.style.display = "block";
+		}
+	});
+	inputDotted.addEventListener('keypress', function(e) {
+		if (e.key === 'Enter')
+			btnApplyDotted.click();
+	});
+
+	// Proofs in normal D-notation (up to 35 axioms {1,…9,a,…,z})
+	btnClearDProof.addEventListener("click", function() {
+		txtInputDProof.focus();
+		txtInputDProof.selectionStart = 0;
+		txtInputDProof.selectionEnd = txtInputDProof.value.length;
+		document.execCommand("delete", null, false);
+		error.style.display = "none";
+	});
+	btnCopyDProof.addEventListener("click", function() {
+		navigator.clipboard.writeText(txtInputDProof.value);
+	});
+	btnApplyDProof.addEventListener("click", function() {
+		const inputString = txtInputDProof.value;
+		try {
+			let svg = GalacticSvgGenerator.fromProof(getFontHeigth(), inputString, "svg2", getPlain(), getPaddingL(), getPaddingT(), getPaddingR(), getPaddingB(), getDebug());
+			if (svg === undefined)
+				throw "conversion failed";
+			setTxtRaw(txtSvgStructural, svg);
+			targetSvgStructural.innerHTML = svg;
+			error.style.display = "none";
+		} catch (e) {
+			console.error(e);
+			console.error("Failed to parse '" + inputString + "'.");
+			error.style.display = "block";
+		}
+	});
+	inputDProof.addEventListener('keypress', function(e) {
+		if (e.key === 'Enter')
+			btnApplyDProof.click();
+	});
+
+	// Proofs summary
+	btnClearProofSummary.addEventListener("click", function() {
+		txtInputProofSummary.focus();
+		txtInputProofSummary.selectionStart = 0;
+		txtInputProofSummary.selectionEnd = txtInputProofSummary.value.length;
+		document.execCommand("delete", null, false);
+		error.style.display = "none";
+	});
+	btnCopyProofSummary.addEventListener("click", function() {
+		navigator.clipboard.writeText(txtInputProofSummary.value);
+	});
+	btnApplyProofSummary.addEventListener("click", function() {
+		const inputString = txtInputProofSummary.value;
+		try {
+			let svg = GalacticSvgGenerator.fromProofSummary(getFontHeigth(), inputString, "svg2", getPlain(), getCentered(), !getDotted(), getPaddingL(), getPaddingT(), getPaddingR(), getPaddingB(), getDebug());
+			if (svg === undefined)
+				throw "conversion failed";
+			setTxtRaw(txtSvgStructural, svg);
+			targetSvgStructural.innerHTML = svg;
+			error.style.display = "none";
+		} catch (e) {
+			console.error(e);
+			console.error("Failed to parse '" + inputString + "'.");
+			error.style.display = "block";
+		}
+	});
+	inputProofSummary.addEventListener('keypress', function(e) {
+		if (e.key === 'Enter')
+			btnApplyProofSummary.click();
+	});
+
+	// Output
+	btnClearInfixFormula.addEventListener("click", function() {
+		txtInfixFormula.value = "";
+		error.style.display = "none";
+	});
+	btnCopyInfixFormula.addEventListener("click", function() {
+		navigator.clipboard.writeText(txtInfixFormula.value);
+	});
+	btnClearSvgSyntaxTree.addEventListener("click", function() {
+		txtSvgSyntaxTree.value = "";
+		targetSvgSyntaxTree.innerHTML = "";
+		error.style.display = "none";
+	});
+	btnCopySvgSyntaxTree.addEventListener("click", function() {
+		navigator.clipboard.writeText(txtSvgSyntaxTree.value);
+	});
+	btnClearSvgStructural.addEventListener("click", function() {
+		txtSvgStructural.value = "";
+		targetSvgStructural.innerHTML = "";
+		error.style.display = "none";
+	});
+	btnCopySvgStructural.addEventListener("click", function() {
+		navigator.clipboard.writeText(txtSvgStructural.value);
+	});
+
+}
+</script>
+<title>Converter | Structuralizer for C-N-formulas and D-proofs</title>
+</head>
+<body class="flex flex-col min-h-screen">
+	<header class="w-full lg:mb-16 lg:mt-8 max-w-7xl mx-auto sm:px-6">
+	<h1>C-N / D Logic Structuralizer</h1>
+	</header>
+	<svg width="0" height="0" viewBox="0 0 0 0">
+		<defs>
+			<path id="run" d="M6.023 2.701c-1.229.038-2.324 1.019-2.324 2.332v13.934c0 1.75 1.945 2.913 3.563 2.033l12.813-6.967a2.3 2.3 0 0 0 0-4.066L7.262 3a2.42 2.42 0 0 0-1.238-.299zm.002.098a2.33 2.33 0 0 1 1.189.289l12.813 6.967c1.568.853 1.568 3.038 0 3.891L7.215 20.912c-1.555.846-3.414-.269-3.414-1.945V5.033c0-1.257 1.046-2.199 2.225-2.234z"/>
+			<path id="copy" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75"/>
+			<path id="erase" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/>
+		</defs>
+	</svg>
+	<div class="flex flex-col">
+		<div class="flex gap-x-2 md:w-4/5 self-center w-full">
+			<details><summary><small>Examples</small></summary>
+				<div style="display:flex;flex-direction:row">
+					<button id="btnExM" title="Paste inputs from https://xamidi.github.io/pmGenerator/data/m.txt" class="actB rounded-lg grid place-items-center h-10 top-2 w-10 right-12" style="margin-bottom:11px">m</button>
+					<br>
+					<button id="btnExW1" title="Paste inputs from https://xamidi.github.io/pmGenerator/data/w1.txt" class="actB rounded-lg grid place-items-center h-10 top-2 w-10 right-12">w1</button>
+					<br>
+					<button id="btnExW2" title="Paste inputs from https://xamidi.github.io/pmGenerator/data/w2.txt" class="actB rounded-lg grid place-items-center h-10 top-2 w-10 right-12">w2</button>
+					<br>
+					<button id="btnExW3" title="Paste inputs from https://xamidi.github.io/pmGenerator/data/w3.txt" class="actB rounded-lg grid place-items-center h-10 top-2 w-10 right-12">w3</button>
+					<br>
+					<button id="btnExW4" title="Paste inputs from https://xamidi.github.io/pmGenerator/data/w4.txt" class="actB rounded-lg grid place-items-center h-10 top-2 w-10 right-12">w4</button>
+					<br>
+					<button id="btnExW5" title="Paste inputs from https://xamidi.github.io/pmGenerator/data/w5.txt" class="actB rounded-lg grid place-items-center h-10 top-2 w-10 right-12">w5</button>
+					<br>
+					<button id="btnExW6" title="Paste inputs from https://xamidi.github.io/pmGenerator/data/w6.txt" class="actB rounded-lg grid place-items-center h-10 top-2 w-10 right-12">w6</button>
+					<br>
+					<button id="btnExF" title="Paste exemplary formulas" class="actB rounded-lg grid place-items-center h-10 top-2 w-10 right-12">ψ</button>
+				</div>
+			</details>
+			<details><summary><small>Settings</small></summary>
+				<div style="display:flex;flex-direction:row">
+					<p class="cs" style="margin-bottom:8px">
+						<input id="txtFontEm" class="txtIn mt4" name="fontEm" value="18">
+						<br>font
+						<br>height
+					</p>
+					<br>
+					<p class="cs" style="margin-left:16px">
+						<input id="txtPaddingLeft" class="txtIn mt4" name="paddingLeft" value="20">
+						<input id="txtPaddingTop" class="txtIn mt4" name="paddingTop" value="20">
+						<input id="txtPaddingRight" class="txtIn mt4" name="paddingRight" value="20">
+						<input id="txtPaddingBottom" class="txtIn mt4" name="paddingBottom" value="20">
+						<br>padding
+						<br>(left, top, right, bottom)
+					</p>
+					<br>
+					<p class="cs" style="margin-left:16px">
+						<input type="checkbox" id="chkPlain" class="mt4" name="plain">
+						<br>plain
+						<br>output
+					</p>
+					<p class="cs" style="margin-left:8px">
+						<input type="checkbox" id="chkDebug" class="mt4" name="debug">
+						<br>debug
+						<br>mode
+					</p>
+					<br>
+				</div>
+			</details>
+			<details><summary><small>Hints</small></summary>
+				<div style="display:flex;flex-direction:row">
+					<p class="ls" style="margin-top:1px;margin-bottom:12px">• Input and output fields have play and copy buttons next to them, respectively. Input fields are supporting Undo, Redo, and Enter.
+						<br>• You may import examples to illustrate input formats. Furthermore, conclusion formulas can be omitted from proof summary steps.
+						<br>• The syntax tree generator supports special symbols and more operators than the structuralizer, but hides unsupported characters.
+						<br>• There is a wealth of suitable data at <a target="_blank" href="https://github.com/xamidi/pmGenerator">github.com/xamidi/pmGenerator</a>. This is also the source of the importable examples.
+					</p>
+				</div>
+			</details>
+			<details><summary><small>Info</small></summary>
+				<div style="display:flex;flex-direction:row">
+					<p class="ls" style="margin-top:1px;margin-bottom:12px">Input: Propositional formulas in (1. normal, 2. dotted) <a target="_blank" href="https://en.wikipedia.org/wiki/Polish_notation#Polish_notation_for_logic">Polish notation</a>, or 3. condensed detachment proofs in <a target="_blank" href="https://en.wikipedia.org/wiki/Condensed_detachment#D-notation">D-notation</a>, or 4. index-based summaries of such proofs.
+						<br>Output: Conversion betweeen (1.),(2.). — Generation of infix formulas and syntax trees for (1.),(2.). — Generation of plain or structured universal illustrations for pure C-N-formulas and pure D-proofs.
+						<br><svg height="1em" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512">
+							<path fill="#f6f4f0" d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1l-.3-61.4s-70 15-84.7-29.8c0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4l-.3 83.6c0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/>
+						</svg> <a target="_blank" href="https://github.com/xamidi/logic-structuralizer">github.com/xamidi/logic-structuralizer</a>
+					</p>
+				</div>
+			</details>
+		</div>
+		<div id="error" style="display:none" class="mt-1 h-7 self-center">
+			<span style="color:rgb(248 113 113)">Invalid input.</span>
+		</div>
+		<div class="flex gap-x-2 h-14 md:w-4/5 self-center w-full">
+			<div id="inputNormal" class="input flex-1 h-full relative">
+				<input id="txtInputNormal" class="rounded-lg border h-full md:text-lg p-4 text-md tracking-widest w-full" placeholder="Enter normal Polish formula..." spellcheck="false" style="background-color:rgba(64,64,64,.4)">
+				<button id="btnClearNormal" title="Clear input" class="actR innerButton rounded-lg grid place-items-center absolute h-10 top-2 w-10 right-12">
+					<svg class="h-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+						<use xlink:href="#erase"/>
+					</svg>
+				</button>
+				<button id="btnCopyNormal" title="Copy expression" class="actB innerButton rounded-lg grid place-items-center absolute h-10 top-2 w-10 right-2">
+					<svg class="h-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+						<use xlink:href="#copy"/>
+					</svg>
+				</button>
+			</div>
+			<button id="btnApplyNormal" title="Apply input" class="actG dedicatedButton rounded-lg grid place-items-center border h-14 w-14">
+				<svg class="h-7" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+					<use xlink:href="#run"/>
+				</svg>
+			</button>
+		</div>
+		<div class="flex gap-x-2 h-14 md:w-4/5 self-center w-full" style="margin-top:8px">
+			<div id="inputDotted" class="input flex-1 h-full relative">
+				<input id="txtInputDotted" class="rounded-lg border h-full md:text-lg p-4 text-md tracking-widest w-full" placeholder="Enter dotted Polish formula..." spellcheck="false" style="background-color:rgba(64,64,64,.4)">
+				<button id="btnClearDotted" title="Clear input" class="actR innerButton rounded-lg grid place-items-center absolute h-10 top-2 w-10 right-12">
+					<svg class="h-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+						<use xlink:href="#erase"/>
+					</svg>
+				</button>
+				<button id="btnCopyDotted" title="Copy expression" class="actB innerButton rounded-lg grid place-items-center absolute h-10 top-2 w-10 right-2">
+					<svg class="h-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+						<use xlink:href="#copy"/>
+					</svg>
+				</button>
+			</div>
+			<button id="btnApplyDotted" title="Apply input" class="actG dedicatedButton rounded-lg grid place-items-center border h-14 w-14">
+				<svg class="h-7" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+					<use xlink:href="#run"/>
+				</svg>
+			</button>
+		</div>
+		<div class="flex gap-x-2 h-14 md:w-4/5 self-center w-full" style="margin-top:8px">
+			<div class="input flex-1 h-full relative">
+				<input id="txtInfixFormula" readonly class="rounded-lg border h-full md:text-lg p-4 text-md tracking-widest w-full" spellcheck="false" style="background-color:rgba(64,64,64,.4)">
+				<button id="btnClearInfixFormula" title="Clear output" class="actR innerButton rounded-lg grid place-items-center absolute h-10 top-2 w-10 right-2">
+					<svg class="h-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+						<use xlink:href="#erase"/>
+					</svg>
+				</button>
+			</div>
+			<button id="btnCopyInfixFormula" title="Copy output" class="actB dedicatedButton rounded-lg grid place-items-center border h-14 w-14">
+				<svg class="h-7" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+					<use xlink:href="#copy"/>
+				</svg>
+			</button>
+		</div>
+		<div class="flex gap-x-2 md:w-4/5 self-center w-full" style="margin-top:8px">
+			<div id="targetSvgSyntaxTree" style="overflow:auto;max-height:425px;width:100%"></div>
+		</div>
+		<div class="flex gap-x-2 md:w-4/5 self-center w-full" style="background-color:inherit">
+			<div class="flex-1 h-full relative" style="margin-bottom:-7px">
+				<textarea id="txtSvgSyntaxTree" readonly cols="40" rows="3" class="rounded-lg border md:text-lg p-4 text-md tracking-widest w-full" spellcheck="false" style="color:inherit;background-color:rgba(64,64,64,.4);resize:none;white-space:pre"></textarea>
+				<button id="btnClearSvgSyntaxTree" title="Clear output" class="actR innerButton rounded-lg grid place-items-center absolute h-10 top-2 w-10 right-2">
+					<svg class="h-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+						<use xlink:href="#erase"/>
+					</svg>
+				</button>
+			</div>
+			<button id="btnCopySvgSyntaxTree" title="Copy output" class="actB dedicatedButton rounded-lg grid place-items-center border h-14 w-14">
+				<svg class="h-7" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+					<use xlink:href="#copy"/>
+				</svg>
+			</button>
+		</div>
+		<div class="flex gap-x-2 h-14 md:w-4/5 self-center w-full" style="margin-top:12px">
+			<div id="inputDProof" class="input flex-1 h-full relative">
+				<input id="txtInputDProof" class="rounded-lg border h-full md:text-lg p-4 text-md tracking-widest w-full" placeholder="Enter D-proof..." spellcheck="false" style="background-color:rgba(64,64,64,.4)">
+				<button id="btnClearDProof" title="Clear input" class="actR innerButton rounded-lg grid place-items-center absolute h-10 top-2 w-10 right-12">
+					<svg class="h-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+						<use xlink:href="#erase"/>
+					</svg>
+				</button>
+				<button id="btnCopyDProof" title="Copy expression" class="actB innerButton rounded-lg grid place-items-center absolute h-10 top-2 w-10 right-2">
+					<svg class="h-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+						<use xlink:href="#copy"/>
+					</svg>
+				</button>
+			</div>
+			<button id="btnApplyDProof" title="Apply input" class="actG dedicatedButton rounded-lg grid place-items-center border h-14 w-14">
+				<svg class="h-7" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+					<use xlink:href="#run"/>
+				</svg>
+			</button>
+		</div>
+		<div class="flex gap-x-2 md:w-4/5 self-center w-full" style="margin-top:7px">
+			<div id="inputProofSummary" class="input flex-1 h-full relative" style="margin-bottom:-7px">
+				<textarea id="txtInputProofSummary" cols="40" rows="7" class="rounded-lg border h-full md:text-lg p-4 text-md tracking-widest w-full" placeholder="Enter D-proof summary..." spellcheck="false" style="color:inherit;background-color:rgba(64,64,64,.4);resize:none;white-space:pre"></textarea>
+				<button id="btnClearProofSummary" title="Clear input" class="actR innerButton rounded-lg grid place-items-center absolute h-10 top-2 w-10 right-12">
+					<svg class="h-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+						<use xlink:href="#erase"/>
+					</svg>
+				</button>
+				<button id="btnCopyProofSummary" title="Copy expression" class="actB innerButton rounded-lg grid place-items-center absolute h-10 top-2 w-10 right-2">
+					<svg class="h-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+						<use xlink:href="#copy"/>
+					</svg>
+				</button>
+			</div>
+			<div>
+				<button id="btnApplyProofSummary" title="Apply input" class="actG dedicatedButton rounded-lg grid place-items-center border h-14 w-14">
+					<svg class="h-7" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+						<use xlink:href="#run"/>
+					</svg>
+				</button>
+				<br>
+				<p class="cs">
+					<input type="checkbox" id="chkCentered" name="centered" style="margin-top:16px">
+					<br>centered
+					<br>output
+				</p>
+				<p class="cs">
+					<input type="checkbox" id="chkDotted" name="dotted" style="margin-top:8px">
+					<br>dotted
+					<br>input
+				</p>
+			</div>
+		</div>
+		<div class="flex gap-x-2 md:w-4/5 self-center w-full" style="margin-top:8px">
+			<div id="targetSvgStructural" style="overflow:auto;max-height:500px;width:100%"></div>
+		</div>
+		<div class="flex gap-x-2 md:w-4/5 self-center w-full">
+			<div class="flex-1 h-full relative" style="margin-bottom:-7px">
+				<textarea id="txtSvgStructural" readonly cols="40" rows="3" class="rounded-lg border md:text-lg p-4 text-md tracking-widest w-full" spellcheck="false" style="color:inherit;background-color:rgba(64,64,64,.4);resize:none;white-space:pre"></textarea>
+				<button id="btnClearSvgStructural" title="Clear output" class="actR innerButton rounded-lg grid place-items-center absolute h-10 top-2 w-10 right-2">
+					<svg class="h-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+						<use xlink:href="#erase"/>
+					</svg>
+				</button>
+			</div>
+			<button id="btnCopySvgStructural" title="Copy output" class="actB dedicatedButton rounded-lg grid place-items-center border h-14 w-14">
+				<svg class="h-7" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+					<use xlink:href="#copy"/>
+				</svg>
+			</button>
+		</div>
+	</div>
+</body>
+</html>
