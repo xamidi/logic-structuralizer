@@ -9,7 +9,7 @@
 <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300..700&display=swap" rel="stylesheet">
 <style>body,button,input,textarea{line-height:inherit}a,button,input,textarea{color:inherit}body,h1,h2,h3,h4,h5,h6,p{margin:0}*{box-sizing:border-box;border:0 solid #e5e7eb}h1,h2,h3,h4,h5,h6{font-size:inherit}code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}.mx-auto{margin-left:auto;margin-right:auto}.max-w-7xl{max-width:80rem}.tracking-widest{letter-spacing:.1em}body,h1{color:rgb(245 245 245)}body{background-color:rgb(23 23 23)}[type=button],[type=reset],[type=submit],button{background-color:transparent;background-image:none}.dedicatedButton,.innerButton,input,textarea{background-color:rgba(64,64,64,.4)}button:hover{background-color:rgba(64,64,64,.8)}.place-items-center{place-items:center}.h-6{height:1.5rem}.h-7{height:1.75rem}.w-10{width:2.5rem}.h-10{height:2.5rem}.w-14{width:3.5rem}.h-14{height:3.5rem}.rounded-lg{border-radius:.5rem}.top-2{top:.5rem}.right-2{right:.5rem}.right-12{right:3rem}.flex-1{flex:1 1 0}.h-full{height:100%}.relative{position:relative}.self-center{align-self:center}.gap-x-2{column-gap:.5rem}.absolute{position:absolute}.border{border-width:1px}.w-full{width:100%}.p-4{padding:1rem}button,input,textarea{font-family:inherit}svg{vertical-align:middle}[role=button],button{cursor:pointer}.input button:hover{transform:scale(1.05)}.flex-col{flex-direction:column}.min-h-screen{min-height:100vh}.flex{display:flex}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:Comfortaa,sans-serif,ui-sans-serif,system-ui,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji;font-feature-settings:normal}h1{line-height:1;font-size:3rem}.mt-1{margin-top:.25rem}@media (min-width:640px){.sm\:px-6{padding-left:1.5rem;padding-right:1.5rem}}@media (min-width:768px){.md\:w-4\/5{width:80%}.md\:text-lg{font-size:1.125rem;line-height:1.75rem}}@media (min-width:1024px){.lg\:mb-16{margin-bottom:4rem}.lg\:mt-8{margin-top:2rem}}.actR:active{color:#f00}.actB:active{color:#57b9ff}.actG:active{color:#0f0}</style>
-<style>.txtIn{width:30px;height:16px;font-size:8pt;text-align:center}.mt4{margin-top:4px}.cs{text-align:center;line-height:1.1;font-size:8pt}.ls{line-height:1.2;font-size:8pt}a{color:#57b9ff;text-decoration:none}a:hover{text-decoration:underline}summary{cursor:pointer}</style>
+<style>.txtIn{width:30px;height:16px;font-size:8pt;text-align:center}.txtInW{width:60px;height:16px;font-size:8pt;text-align:center}.mt4{margin-top:4px}.cs{text-align:center;line-height:1.1;font-size:8pt}.ls{line-height:1.2;font-size:8pt}.lt{line-height:1.2;font-size:7pt}a{color:#57b9ff;text-decoration:none}a:hover{text-decoration:underline}summary{cursor:pointer}</style>
 <script src="DlFormula.js"></script>
 <script src="DlCore.js"></script>
 <script src="FctHelper.js"></script>
@@ -19,6 +19,26 @@
 <script src="SvgTreeEngine.js"></script>
 <script src="TreeNodeAdapter.js"></script>
 <script>
+const getOpFillColor = () => { return document.getElementById("txtColorOpFill").value; };
+const getOpStrokeColor = () => { return document.getElementById("txtColorOpStroke").value; };
+const getOpFontColor = () => { return document.getElementById("txtColorOpFont").value; };
+const getVarFillColor = () => { return document.getElementById("txtColorVarFill").value; };
+const getVarStrokeColor = () => { return document.getElementById("txtColorVarStroke").value; };
+const getVarFontColor = () => { return document.getElementById("txtColorVarFont").value; };
+const getEdgesColor = () => { return document.getElementById("txtColorEdges").value; };
+const getBgColor = () => { return document.getElementById("txtColorBg").value; };
+const getAvoidOverlaps = () => { return document.getElementById("chkAvoidOverlaps").checked; };
+function configParseTreeGen(svgTreeEngine) {
+	svgTreeEngine.setWebColor_opVertexFill(getOpFillColor());
+	svgTreeEngine.setWebColor_opVertexStroke(getOpStrokeColor());
+	svgTreeEngine.setWebColor_opVertexFont(getOpFontColor());
+	svgTreeEngine.setWebColor_varVertexFill(getVarFillColor());
+	svgTreeEngine.setWebColor_varVertexStroke(getVarStrokeColor());
+	svgTreeEngine.setWebColor_varVertexFont(getVarFontColor());
+	svgTreeEngine.setWebColor_edgeStroke(getEdgesColor());
+	svgTreeEngine.setWebColor_background(getBgColor());
+	svgTreeEngine.setAvoidOverlaps(getAvoidOverlaps());
+}
 function parseInputNum(s, name, pos) {
 	let n = parseInt(s);
 	if (pos && !n)
@@ -57,14 +77,20 @@ function scrollToZero(txt) { // Scroll to (0,0) ; make multiple delayed calls to
 }
 function setTxt(txt, s) {
 	txt.focus();
-	txt.selectionStart = 0;
-	txt.selectionEnd = txt.value.length;
-	document.execCommand("insertText", false, s);
+	if (txt.value != s) {
+		txt.selectionStart = 0;
+		txt.selectionEnd = txt.value.length;
+		document.execCommand("insertText", false, s);
+	} else
+		txt.selectionStart = txt.selectionEnd = txt.value.length;
 	scrollToZero(txt);
 }
 function setTxtRaw(txt, s) {
 	txt.value = s;
 	scrollToZero(txt);
+}
+function setTxtById(txtId, s) {
+	setTxt(document.getElementById(txtId), s);
 }
 function fetchSample(url, action) {
 	fetch(url).then(res => res.text()).then(s => {
@@ -90,13 +116,26 @@ function registerSample(id, url) {
 }
 function setSyntaxTree(syntaxTree, divTarget, txtTarget) {
 		let _svgTreeEngine = new SvgTreeEngine();
+		configParseTreeGen(_svgTreeEngine);
 		_svgTreeEngine.execute(syntaxTree, SvgTreeEngine.operatorSvgData, "\\");
 		const svgSyntaxTree = _svgTreeEngine.getSvgFile();
 		divTarget.innerHTML = svgSyntaxTree;
 		setTxtRaw(txtTarget, svgSyntaxTree);
 }
+function setParseTreeColors(opFill, opStroke, opFont, varFill, varStroke, varFont, edges, bg) {
+	setTxtById("txtColorOpFill", opFill);
+	setTxtById("txtColorOpStroke", opStroke);
+	setTxtById("txtColorOpFont", opFont);
+	setTxtById("txtColorVarFill", varFill);
+	setTxtById("txtColorVarStroke", varStroke);
+	setTxtById("txtColorVarFont", varFont);
+	setTxtById("txtColorEdges", edges);
+	setTxtById("txtColorBg", bg);
+}
 
 window.onload = function() {
+	const btnPaletteLight = document.getElementById("btnPaletteLight");
+	const btnPaletteDark = document.getElementById("btnPaletteDark");
 	const error = document.getElementById("error");
 	const inputNormal = document.getElementById('inputNormal');
 	const txtInputNormal = document.getElementById("txtInputNormal");
@@ -137,6 +176,14 @@ window.onload = function() {
 	registerSample("btnExW4", "https://xamidi.github.io/pmGenerator/data/w4.txt");
 	registerSample("btnExW5", "https://xamidi.github.io/pmGenerator/data/w5.txt");
 	registerSample("btnExW6", "https://xamidi.github.io/pmGenerator/data/w6.txt");
+
+	// Preset Settings
+	btnPaletteLight.addEventListener("click", function() {
+		setParseTreeColors("#ccf", "#4040ff", "#000", "#ccc", "#404040", "#000", "#000", "#fff");
+	});
+	btnPaletteDark.addEventListener("click", function() {
+		setParseTreeColors("#b4b1f8", "#67449f", "#116", "#d1dff1", "#67449f", "#116", "#ffe3ff", "#171717");
+	});
 
 	// Formulas to illustrate syntax tree capabilities
 	document.getElementById("btnExF").addEventListener("click", function() {
@@ -345,7 +392,48 @@ window.onload = function() {
 			</details>
 			<details><summary><small>Settings</small></summary>
 				<div style="display:flex;flex-direction:row">
+					<p class="ls" style="margin-top:1px;margin-bottom:12px"><b>Syntax Trees</b>
+					<br><button id="btnPaletteLight" title="Paste colors for light color scheme" class="actB lt" style="border-width:.1px">preset:&nbsp;light</button>
+					<br><button id="btnPaletteDark" title="Paste colors for dark color scheme" class="actB lt" style="border-width:.1px;margin-bottom:-2px">preset:&nbsp;dark</button>
+					</p>
 					<p class="cs" style="margin-bottom:8px">
+						<input id="txtColorOpFill" class="txtInW mt4" spellcheck="false" name="colorOpFill" value="#b4b1f8">
+						<input id="txtColorOpStroke" class="txtInW mt4" spellcheck="false" name="colorOpStroke" value="#67449f">
+						<input id="txtColorOpFont" class="txtInW mt4" spellcheck="false" name="colorOpFont" value="#116">
+						<br>operator color
+						<br>(fill, stroke, font)
+					</p>
+					<br>
+					<p class="cs" style="margin-left:8px">
+						<input id="txtColorVarFill" class="txtInW mt4" spellcheck="false" name="colorVarFill" value="#d1dff1">
+						<input id="txtColorVarStroke" class="txtInW mt4" spellcheck="false" name="colorVarStroke" value="#67449f">
+						<input id="txtColorVarFont" class="txtInW mt4" spellcheck="false" name="colorVarFont" value="#116">
+						<br>variable color
+						<br>(fill, stroke, font)
+					</p>
+					<br>
+					<p class="cs" style="margin-left:8px">
+						<input id="txtColorEdges" class="txtInW mt4" spellcheck="false" name="colorEdges" value="#ffe3ff">
+						<br>edge
+						<br>color
+					</p>
+					<br>
+					<p class="cs" style="margin-left:8px">
+						<input id="txtColorBg" class="txtInW mt4" spellcheck="false" name="colorBg" value="#171717">
+						<br>bg
+						<br>color
+					</p>
+					<br>
+					<p class="cs" style="margin-left:8px">
+						<input type="checkbox" id="chkAvoidOverlaps" class="mt4" name="avoidOverlaps">
+						<br>avoid
+						<br>overlaps
+					</p>
+					<br>
+				</div>
+				<div style="display:flex;flex-direction:row">
+					<p class="ls" style="margin-top:1px;margin-bottom:12px"><b>Structuralizer</b></p>
+					<p class="cs" style="margin-bottom:8px;margin-left:12px">
 						<input id="txtFontEm" class="txtIn mt4" name="fontEm" value="18">
 						<br>font
 						<br>height

@@ -1,8 +1,3 @@
-// TODO
-// https://validator.w3.org/nu/#file
-// https://products.codeporting.ai/convert/cpp-to-js/
-// https://www.codeconvert.ai/free-converter
-
 // Information for text geometry; We use this in order to print variable names as pure geometry, i.e. without text. Variable names are composed of characters for which
 // the whole German alphabet is supported (including "äAöÖüÜßẞ"), but only the special characters "()_'\". The special command prefix is automatically printed as '\'
 // (but probably shouldn't occur in variable names). All unsupported characters are omitted when printing the variable names. So it is recommended to use a validator to
@@ -20,7 +15,7 @@ class SymbolInfo {
 	}
 }
 
-// They all have to be internally handled by "\\" + <name> in _addTextLinksToSvgElement(), and are executed when cmdPrefix + <name> occurs in a variable name.
+// They all have to be internally handled by "\\" + <name> in _textLinks(), and are executed when cmdPrefix + <name> occurs in a variable name.
 const __specialCommandNames = ["_"];
 
 // Should only contain keys of single symbols.
@@ -127,25 +122,25 @@ const __specialSymbolPathData = new Map([
 class SvgTreeEngine {
 	// Operators for propositional modal logic (alethic + deontic)
 	static operatorSvgData = new Map([
-			["and", `\t\t\t\t<svg style="display:block" width="14" height="18" viewBox="0 0 14 18">\n\t\t\t\t\t<g fill="#000">\n\t\t\t\t\t\t<use transform="matrix(10,0,0,10,2.4,12.8)" xlink:href="#and_ref1"/>\n\t\t\t\t\t</g>\n\t\t\t\t\t<defs>\n\t\t\t\t\t\t<path id="and_ref1" transform="scale(0.001,-0.001)" d="M126.8,22.9 c-19.9,0 -35.1,18.4 -35.1,35.2 0,6.1 1.5,10.7 4.6,16.8 l331.5,663 c6.1,12.2 16.8,19.9 30.5,19.9 15.3,0 26,-7.7 32.1,-19.9 L821.9,74.9 c3.1,-6.1 4.6,-10.7 4.6,-16.8 0,-16.8 -15.2,-35.2 -35.1,-35.2 -13.8,0 -26,7.7 -32.1,19.9 l-301,600.4 L158.9,42.8 C152.8,30.6 140.6,22.9 126.8,22.9 z"/>\n\t\t\t\t\t</defs>\n\t\t\t\t</svg>\n`],
+			["and", `\t\t\t\t<svg style="display:block" width="14" height="18" viewBox="0 0 14 18">\n\t\t\t\t\t<g>\n\t\t\t\t\t\t<use transform="matrix(10,0,0,10,2.4,12.8)" xlink:href="#and_ref1"/>\n\t\t\t\t\t</g>\n\t\t\t\t\t<defs>\n\t\t\t\t\t\t<path id="and_ref1" transform="scale(0.001,-0.001)" d="M126.8,22.9 c-19.9,0 -35.1,18.4 -35.1,35.2 0,6.1 1.5,10.7 4.6,16.8 l331.5,663 c6.1,12.2 16.8,19.9 30.5,19.9 15.3,0 26,-7.7 32.1,-19.9 L821.9,74.9 c3.1,-6.1 4.6,-10.7 4.6,-16.8 0,-16.8 -15.2,-35.2 -35.1,-35.2 -13.8,0 -26,7.7 -32.1,19.9 l-301,600.4 L158.9,42.8 C152.8,30.6 140.6,22.9 126.8,22.9 z"/>\n\t\t\t\t\t</defs>\n\t\t\t\t</svg>\n`],
 			["app", `\t\t\t\t<svg style="display:block" width="20" height="18" viewBox="0 0 20 18">\n\t\t\t\t\t<path d="M10.428,3.947 a6.34,6.34 0 0,0 -4.488,1.857 c-0.104,0.096 -0.104,0.256 0,0.352 l4.305,4.305 c0.048,0.056 0.112,0.078 0.176,0.078 s0.128,-0.022 0.176,-0.078 l4.32,-4.305 a0.25,0.25 0 0,0 0,-0.352 c-1.192,-1.184 -2.816,-1.857 -4.488,-1.857 z m0,0.488 a5.83,5.83 0 0,1 3.969,1.553 l-3.969,3.967 -3.977,-3.967 c1.08,-1.008 2.497,-1.553 3.977,-1.553 z"/>\n\t\t\t\t\t<path d="M4.016,9.277 c-0.736,0 -1.736,0.661 -1.736,2.041 s1,2.041 1.736,2.041 h7.207 5.783 c-0.49,0.7 -1.232,1.46 -1.232,1.83 0,0.21 0.12,0.35 0.246,0.35 0.077,0 0.139,-0.049 0.195,-0.139 0.567,-0.96 1.273,-1.831 2.148,-2.061 0.119,-0.03 0.203,-0.17 0.203,-0.34 0,-0.18 -0.084,-0.32 -0.203,-0.35 -0.875,-0.23 -1.581,-1.101 -2.148,-2.061 -0.056,-0.09 -0.118,-0.141 -0.195,-0.141 -0.126,0 -0.246,0.142 -0.246,0.352 0,0.36 0.721,1.1 1.232,1.85 h-5.783 H4.08 c-1.04,-0.069 -1.312,-0.81 -1.312,-1.334 0,-0.65 0.393,-1.287 1.297,-1.344 0.256,-0.011 0.256,-0.331 0.256,-0.342 0,-0.353 -0.241,-0.354 -0.305,-0.354 z"/>\n\t\t\t\t</svg>\n`],
-			["bot", `\t\t\t\t<svg style="display:block" width="11" height="18" viewBox="0 0 11 18">\n\t\t\t\t\t<g fill="#000">\n\t\t\t\t\t\t<use transform="matrix(10,0,0,10,1.6,13)" xlink:href="#bot_ref1"/>\n\t\t\t\t\t</g>\n\t\t\t\t\t<defs>\n\t\t\t\t\t\t<path id="bot_ref1" transform="scale(0.001,-0.001)" d="M126.8,-35 C108.5,-35 91.7,-19.8 91.7,0 c0,19.9 16.8,35.1 35.1,35.1 l262.8,0 0,745.6 c0,19.9 15.3,35.1 35.1,35.1 18.4,0 35.2,-15.2 35.2,-35.1 l0,-745.6 261.2,0 C741,35.1 756.3,19.9 756.3,0 c0,-19.8 -15.3,-35 -35.2,-35 z"/>\n\t\t\t\t\t</defs>\n\t\t\t\t</svg>\n`],
+			["bot", `\t\t\t\t<svg style="display:block" width="11" height="18" viewBox="0 0 11 18">\n\t\t\t\t\t<g>\n\t\t\t\t\t\t<use transform="matrix(10,0,0,10,1.6,13)" xlink:href="#bot_ref1"/>\n\t\t\t\t\t</g>\n\t\t\t\t\t<defs>\n\t\t\t\t\t\t<path id="bot_ref1" transform="scale(0.001,-0.001)" d="M126.8,-35 C108.5,-35 91.7,-19.8 91.7,0 c0,19.9 16.8,35.1 35.1,35.1 l262.8,0 0,745.6 c0,19.9 15.3,35.1 35.1,35.1 18.4,0 35.2,-15.2 35.2,-35.1 l0,-745.6 261.2,0 C741,35.1 756.3,19.9 756.3,0 c0,-19.8 -15.3,-35 -35.2,-35 z"/>\n\t\t\t\t\t</defs>\n\t\t\t\t</svg>\n`],
 			["com", `\t\t\t\t<svg style="display:block" width="20" height="18" viewBox="0 0 20 18">\n\t\t\t\t\t<path d="M10.428,3.484 c-2.19,0 -3.875,1.787 -3.875,3.875 0,2.184 1.793,3.865 3.875,3.865 2.19,0 3.877,-1.783 3.877,-3.865 0,-2.19 -1.789,-3.875 -3.877,-3.875 z m0,0.42 c1.962,0 3.457,1.595 3.457,3.455 0,1.956 -1.597,3.445 -3.457,3.445 -1.962,0 -3.455,-1.591 -3.455,-3.445 0,-1.962 1.601,-3.455 3.455,-3.455 z"/>\n\t\t\t\t\t<path d="M4.016,9.277 c-0.736,0 -1.736,0.661 -1.736,2.041 s1,2.041 1.736,2.041 h7.207 5.783 c-0.49,0.7 -1.232,1.46 -1.232,1.83 0,0.21 0.12,0.35 0.246,0.35 0.077,0 0.139,-0.049 0.195,-0.139 0.567,-0.96 1.273,-1.831 2.148,-2.061 0.119,-0.03 0.203,-0.17 0.203,-0.34 0,-0.18 -0.084,-0.32 -0.203,-0.35 -0.875,-0.23 -1.581,-1.101 -2.148,-2.061 -0.056,-0.09 -0.118,-0.141 -0.195,-0.141 -0.126,0 -0.246,0.142 -0.246,0.352 0,0.36 0.721,1.1 1.232,1.85 h-5.783 H4.08 c-1.04,-0.069 -1.312,-0.81 -1.312,-1.334 0,-0.65 0.393,-1.287 1.297,-1.344 0.256,-0.011 0.256,-0.331 0.256,-0.342 0,-0.353 -0.241,-0.354 -0.305,-0.354 z"/>\n\t\t\t\t</svg>\n`],
-			["equiv", `\t\t\t\t<svg style="display:block" width="19" height="18" viewBox="0 0 19 18">\n\t\t\t\t\t<g fill="#000">\n\t\t\t\t\t\t<use transform="matrix(10,0,0,10,2.4,12.9)" xlink:href="#equiv_ref1"/>\n\t\t\t\t\t</g>\n\t\t\t\t\t<defs>\n\t\t\t\t\t\t<path id="equiv_ref1" transform="scale(0.001,-0.001)" d="M455.3,136 c-10.7,0 -19.9,4.6 -27.5,13.7 C346.8,246 246,333.1 120.7,356 c-16.8,3 -29,16.8 -29,33.6 0,18.3 12.2,32.1 29,35.1 C246,447.6 346.8,534.7 427.8,631 c7.6,9.1 16.8,13.7 27.5,13.7 18.3,0 35.1,-13.7 35.1,-35.1 C490.4,572.9 385,496.5 314.7,424.7 l846.4,0 C1089.3,499.6 985.4,574.4 985.4,609.6 c0,21.4 16.8,35.1 35.2,35.1 10.7,0 21.3,-4.6 27.5,-13.7 82.5,-96.3 181.8,-183.4 307,-206.3 16.8,-3 29.1,-16.8 29.1,-35.1 0,-16.8 -12.3,-30.6 -29.1,-33.6 C1229.9,333.1 1130.6,246 1048.1,149.7 c-6.2,-9.1 -16.8,-13.7 -27.5,-13.7 -18.4,0 -35.2,13.7 -35.2,35.1 0,36.7 107,113.1 175.7,183.3 l-846.4,0 C388.1,281.1 490.4,206.3 490.4,171.1 490.4,149.7 473.6,136 455.3,136 z"/>\n\t\t\t\t\t</defs>\n\t\t\t\t</svg>\n`],
-			["implied", `\t\t\t\t<svg style="display:block" width="17" height="18" viewBox="0 0 17 18">\n\t\t\t\t\t<g fill="#000">\n\t\t\t\t\t\t<use transform="matrix(10,0,0,10,2.4,12.9)" xlink:href="#implied_ref1"/>\n\t\t\t\t\t</g>\n\t\t\t\t\t<defs>\n\t\t\t\t\t\t<path id="implied_ref1" transform="scale(0.001,-0.001)" d="M455.3,136 c-10.7,0 -19.9,4.6 -27.5,13.7 C346.8,246 246,333.1 120.7,356 c-16.8,3 -29,16.8 -29,33.6 0,18.3 12.2,32.1 29,35.1 C246,447.6 346.8,534.7 427.8,631 c7.6,9.1 16.8,13.7 27.5,13.7 18.3,0 35.1,-13.7 35.1,-35.1 C490.4,572.9 385,496.5 314.7,424.7 l831.1,0 c19.9,0 35.2,-15.3 35.2,-35.1 0,-18.3 -15.3,-35.2 -35.2,-35.2 l-831.1,0 C388.1,281.1 490.4,206.3 490.4,171.1 490.4,149.7 473.6,136 455.3,136 z"/>\n\t\t\t\t\t</defs>\n\t\t\t\t</svg>\n`],
-			["imply", `\t\t\t\t<svg style="display:block" width="17" height="18" viewBox="0 0 17 18">\n\t\t\t\t\t<g fill="#000">\n\t\t\t\t\t\t<use transform="matrix(10,0,0,10,2.4,12.9)" xlink:href="#imply_ref1"/>\n\t\t\t\t\t</g>\n\t\t\t\t\t<defs>\n\t\t\t\t\t\t<path id="imply_ref1" transform="scale(0.001,-0.001)" d="M817.4,136 c-18.4,0 -35.2,13.7 -35.2,35.1 0,36.7 105.4,113.1 175.7,183.3 l-831.1,0 c-18.3,0 -35.1,16.9 -35.1,35.2 0,19.8 16.8,35.1 35.1,35.1 l831.1,0 C884.6,499.6 782.2,574.4 782.2,609.6 c0,21.4 16.8,35.1 35.2,35.1 10.7,0 19.8,-4.6 27.5,-13.7 80.9,-96.3 181.8,-183.4 307,-206.3 16.9,-3 29.1,-16.8 29.1,-35.1 0,-16.8 -12.2,-30.6 -29.1,-33.6 C1026.7,333.1 925.8,246 844.9,149.7 837.2,140.6 828.1,136 817.4,136 z"/>\n\t\t\t\t\t</defs>\n\t\t\t\t</svg>\n`],
-			["nand", `\t\t\t\t<svg style="display:block" width="11" height="18" viewBox="0 0 11 18">\n\t\t\t\t\t<g fill="#000">\n\t\t\t\t\t\t<use transform="matrix(10,0,0,10,2.4,13)" xlink:href="#nand_ref1"/>\n\t\t\t\t\t</g>\n\t\t\t\t\t<defs>\n\t\t\t\t\t\t<path id="nand_ref1" transform="scale(0.001,-0.001)" d="M345.3,-230.6 c-18.4,0 -35.2,16.8 -35.2,35.1 l0,983.8 C236.8,715 161.9,612.6 126.8,612.6 c-21.4,0 -35.1,16.8 -35.1,35.2 0,10.7 4.6,19.8 12.2,27.5 97.8,81 184.9,181.8 207.8,307.1 3,16.8 16.8,29 33.6,29 18.3,0 32.1,-12.2 35.1,-29 C403.3,857.1 488.9,756.3 586.7,675.3 c9.1,-7.7 13.7,-16.8 13.7,-27.5 0,-18.4 -15.3,-35.2 -36.6,-35.2 -35.2,0 -111.6,105.5 -183.4,175.7 l0,-983.8 c0,-18.3 -15.3,-35.1 -35.1,-35.1 z"/>\n\t\t\t\t\t</defs>\n\t\t\t\t</svg>\n`],
-			["nece", `\t\t\t\t<svg style="display:block" width="16" height="18" viewBox="0 0 16 18">\n\t\t\t\t\t<g fill="#000">\n\t\t\t\t\t\t<use transform="matrix(10,0,0,10,1.6,13)" xlink:href="#nece_ref1"/>\n\t\t\t\t\t</g>\n\t\t\t\t\t<defs>\n\t\t\t\t\t\t<path id="nece_ref1" transform="scale(0.001,-0.001)" d="M1170.3,-113 l0,1006.8 -1006.8,0 0,-1006.8 z m-1042,-70.2 c-19.8,0 -35.1,15.2 -35.1,35.1 l0,1077 c0,19.9 15.3,35.1 35.1,35.1 l1077.1,0 c21.4,0 35.2,-15.2 35.2,-35.1 l0,-1077 c0,-19.9 -13.8,-35.1 -35.2,-35.1 z"/>\n\t\t\t\t\t</defs>\n\t\t\t\t</svg>\n`],
-			["nimplied", `\t\t\t\t<svg style="display:block" width="17" height="18" viewBox="0 0 17 18">\n\t\t\t\t\t<g fill="#000">\n\t\t\t\t\t\t<use transform="matrix(10,0,0,10,2.4,12.9)" xlink:href="#nimplied_ref1"/>\n\t\t\t\t\t</g>\n\t\t\t\t\t<defs>\n\t\t\t\t\t\t<path id="nimplied_ref1" transform="scale(0.001,-0.001)" d="M626.4,39.7 c-16.8,0 -26,16.8 -21.4,30.6 L708.9,354.4 l-394.2,0 C388.1,281.1 490.4,206.3 490.4,171.1 490.4,149.7 473.6,136 455.3,136 c-10.7,0 -19.9,4.6 -27.5,13.7 C346.8,246 246,333.1 120.7,356 c-16.8,3 -29,16.8 -29,33.6 0,18.3 12.2,32.1 29,35.1 C246,447.6 346.8,534.7 427.8,631 c7.6,9.1 16.8,13.7 27.5,13.7 18.3,0 35.1,-13.7 35.1,-35.1 C490.4,572.9 385,496.5 314.7,424.7 l420.2,0 108.4,301 c3.1,9.2 12.3,15.3 21.4,15.3 16.8,0 27.5,-16.8 21.4,-30.6 L782.2,424.7 l363.6,0 c19.9,0 35.2,-15.3 35.2,-35.1 0,-18.3 -15.3,-35.2 -35.2,-35.2 l-388,0 L647.8,55 C644.7,45.8 635.6,39.7 626.4,39.7 z"/>\n\t\t\t\t\t</defs>\n\t\t\t\t</svg>\n`],
-			["nimply", `\t\t\t\t<svg style="display:block" width="17" height="18" viewBox="0 0 17 18">\n\t\t\t\t\t<g fill="#000">\n\t\t\t\t\t\t<use transform="matrix(10,0,0,10,2.4,12.9)" xlink:href="#nimply_ref1"/>\n\t\t\t\t\t</g>\n\t\t\t\t\t<defs>\n\t\t\t\t\t\t<path id="nimply_ref1" transform="scale(0.001,-0.001)" d="M407.9,39.7 c-16.8,0 -27.5,16.8 -21.4,30.6 L490.4,354.4 l-363.6,0 c-18.3,0 -35.1,16.9 -35.1,35.2 0,19.8 16.8,35.1 35.1,35.1 l388.1,0 110,301 c3,9.2 12.2,15.3 21.4,15.3 16.8,0 27.5,-16.8 21.3,-30.6 L563.8,424.7 l394.1,0 C884.6,499.6 782.2,574.4 782.2,609.6 c0,21.4 16.8,35.1 35.2,35.1 10.7,0 19.8,-4.6 27.5,-13.7 80.9,-96.3 181.8,-183.4 307,-206.3 16.9,-3 29.1,-16.8 29.1,-35.1 0,-16.8 -12.2,-30.6 -29.1,-33.6 C1026.7,333.1 925.8,246 844.9,149.7 837.2,140.6 828.1,136 817.4,136 c-18.4,0 -35.2,13.7 -35.2,35.1 0,36.7 105.4,113.1 175.7,183.3 l-418.6,0 L429.3,55 c-3,-9.2 -12.2,-15.3 -21.4,-15.3 z"/>\n\t\t\t\t\t</defs>\n\t\t\t\t</svg>\n`],
-			["nor", `\t\t\t\t<svg style="display:block" width="11" height="18" viewBox="0 0 11 18">\n\t\t\t\t\t<g fill="#000">\n\t\t\t\t\t\t<use transform="matrix(10,0,0,10,2.4,13)" xlink:href="#nor_ref1"/>\n\t\t\t\t\t</g>\n\t\t\t\t\t<defs>\n\t\t\t\t\t\t<path id="nor_ref1" transform="scale(0.001,-0.001)" d="M345.3,-230.6 c-16.8,0 -30.6,12.2 -33.6,29 -22.9,125.3 -110,226 -207.8,307 -7.6,7.7 -12.2,16.8 -12.2,27.5 0,18.4 13.7,35.2 35.1,35.2 36.7,0 113.1,-105.5 183.3,-175.6 l0,983.8 c0,18.3 16.8,35.1 35.2,35.1 19.8,0 35.1,-16.8 35.1,-35.1 l0,-983.8 c74.9,73.2 148.2,175.6 183.4,175.6 21.3,0 36.6,-16.8 36.6,-35.2 0,-10.7 -4.6,-19.8 -13.7,-27.5 C488.9,24.4 403.3,-76.3 380.4,-201.6 c-3,-16.8 -16.8,-29 -35.1,-29 z"/>\n\t\t\t\t\t</defs>\n\t\t\t\t</svg>\n`],
-			["not", `\t\t\t\t<svg style="display:block" width="12" height="18" viewBox="0 0 12 18">\n\t\t\t\t\t<g fill="#000">\n\t\t\t\t\t\t<use transform="matrix(10,0,0,10,1.6,12.8)" xlink:href="#not_ref1"/>\n\t\t\t\t\t</g>\n\t\t\t\t\t<defs>\n\t\t\t\t\t\t<path id="not_ref1" transform="scale(0.001,-0.001)" d="M791.4,82.5 c-19.9,0 -35.1,15.3 -35.1,35.1 l0,236.8 -629.5,0 c-18.3,0 -35.1,16.9 -35.1,35.2 0,19.8 16.8,35.1 35.1,35.1 l664.6,0 c19.9,0 35.1,-13.7 35.1,-35.1 l0,-272 c0,-19.8 -16.8,-35.1 -35.1,-35.1 z"/>\n\t\t\t\t\t</defs>\n\t\t\t\t</svg>\n`],
-			["obli", `\t\t\t\t<svg style="display:block" width="17" height="18" viewBox="0 0 17 18">\n\t\t\t\t\t<g fill="#000">\n\t\t\t\t\t\t<use transform="matrix(10,0,0,10,1.6,13)" xlink:href="#obli_ref1"/>\n\t\t\t\t\t</g>\n\t\t\t\t\t<defs>\n\t\t\t\t\t\t<path id="obli_ref1" transform="scale(0.001,-0.001)" d="M737.9,-184.8 c310.2,0 576,249 576,574.4 0,310.1 -249,576 -576,576 -308.6,0 -576,-249.1 -576,-576 C161.9,81 411,-184.8 737.9,-184.8 z m0,-70.2 C391.1,-255 91.7,26 91.7,389.6 c0,348.3 281.1,646.2 646.2,646.2 348.4,0 646.3,-281.1 646.3,-646.2 C1384.2,42.8 1103.1,-255 737.9,-255 z"/>\n\t\t\t\t\t</defs>\n\t\t\t\t</svg>\n`],
-			["or", `\t\t\t\t<svg style="display:block" width="14" height="18" viewBox="0 0 14 18">\n\t\t\t\t\t<g fill="#000">\n\t\t\t\t\t\t<use transform="matrix(10,0,0,10,2.4,12.8)" xlink:href="#or_ref1"/>\n\t\t\t\t\t</g>\n\t\t\t\t\t<defs>\n\t\t\t\t\t\t<path id="or_ref1" transform="scale(0.001,-0.001)" d="M458.3,22.9 c-13.7,0 -24.4,7.7 -30.5,19.9 L96.3,705.8 c-3.1,6.1 -4.6,10.7 -4.6,16.8 0,16.8 15.2,35.2 35.1,35.2 13.8,0 26,-7.7 32.1,-19.9 L458.3,137.5 l301,600.4 c6.1,12.2 18.3,19.9 32.1,19.9 19.9,0 35.1,-18.4 35.1,-35.2 0,-6.1 -1.5,-10.7 -4.6,-16.8 L490.4,42.8 C484.3,30.6 473.6,22.9 458.3,22.9 z"/>\n\t\t\t\t\t</defs>\n\t\t\t\t</svg>\n`],
-			["perm", `\t\t\t\t<svg style="display:block" width="14" height="18" viewBox="0 0 14 18">\n\t\t\t\t\t<g fill="#000">\n\t\t\t\t\t\t<use transform="matrix(10,0,0,10,1.6,12.9)" xlink:href="#perm_ref1"/>\n\t\t\t\t\t</g>\n\t\t\t\t\t<defs>\n\t\t\t\t\t\t<path id="perm_ref1" transform="scale(0.001,-0.001)" d="M540.8,42.8 l496.6,496.5 c-136,125.3 -313.2,194 -496.6,194 -184.8,0 -362,-68.7 -496.5,-194 L540.8,42.8 z m-0.7,-73.3 c-8.1,0 -16.1,3.1 -22.2,9.2 L-21.3,517.9 c-12.2,12.2 -12.2,32.1 0,44.3 C126.8,710.4 330,794.4 540.8,794.4 c209.3,0 412.5,-84 560.7,-232.2 12.3,-12.2 12.3,-32.1 0,-44.3 L562.2,-21.3 c-6.1,-6.1 -14.1,-9.2 -22.1,-9.2 z"/>\n\t\t\t\t\t</defs>\n\t\t\t\t</svg>\n`],
-			["poss", `\t\t\t\t<svg style="display:block" width="15" height="18" viewBox="0 0 15 18">\n\t\t\t\t\t<g fill="#000">\n\t\t\t\t\t\t<use transform="matrix(10,0,0,10,1.6,13)" xlink:href="#poss_ref1"/>\n\t\t\t\t\t</g>\n\t\t\t\t\t<defs>\n\t\t\t\t\t\t<path id="poss_ref1" transform="scale(0.001,-0.001)" d="M637.1,-67.1 l456.8,456.7 L637.1,847.9 178.8,389.6 637.1,-67.1 z m0,-85.6 c-9.2,0 -18.3,3.1 -26,10.7 L103.9,365.1 c-7.6,7.7 -10.7,16.8 -10.7,24.5 0,9.2 3.1,18.3 10.7,26 L611.1,922.8 c7.7,7.6 16.8,10.7 26,10.7 7.6,0 16.8,-3.1 24.4,-10.7 L1168.8,415.6 c7.6,-7.7 10.6,-16.8 10.6,-26 0,-7.7 -3,-16.8 -10.6,-24.5 L661.5,-142 c-7.6,-7.6 -16.8,-10.7 -24.4,-10.7 z"/>\n\t\t\t\t\t</defs>\n\t\t\t\t</svg>\n`],
-			["top", `\t\t\t\t<svg style="display:block" width="11" height="18" viewBox="0 0 11 18">\n\t\t\t\t\t<g fill="#000">\n\t\t\t\t\t\t<use transform="matrix(10,0,0,10,1.6,13)" xlink:href="#top_ref1"/>\n\t\t\t\t\t</g>\n\t\t\t\t\t<defs>\n\t\t\t\t\t\t<path id="top_ref1" transform="scale(0.001,-0.001)" d="M424.7,-35 c-19.8,0 -35.1,15.2 -35.1,35 l0,745.6 -262.8,0 c-18.3,0 -35.1,15.2 -35.1,35.1 0,19.9 16.8,35.1 35.1,35.1 l594.3,0 c19.9,0 35.2,-15.2 35.2,-35.1 0,-19.9 -15.3,-35.1 -35.2,-35.1 l-261.2,0 L459.9,0 c0,-19.8 -16.8,-35 -35.2,-35 z"/>\n\t\t\t\t\t</defs>\n\t\t\t\t</svg>\n`],
-			["xor", `\t\t\t\t<svg style="display:block" width="19" height="18" viewBox="0 0 19 18">\n\t\t\t\t\t<g fill="#000">\n\t\t\t\t\t\t<use transform="matrix(10,0,0,10,2.4,12.9)" xlink:href="#xor_ref1"/>\n\t\t\t\t\t</g>\n\t\t\t\t\t<defs>\n\t\t\t\t\t\t<path id="xor_ref1" transform="scale(0.001,-0.001)" d="M618.8,39.7 c-16.9,0 -26,16.8 -21.4,30.6 L701.3,354.4 l-386.6,0 C388.1,281.1 490.4,206.3 490.4,171.1 490.4,149.7 473.6,136 455.3,136 c-10.7,0 -19.9,4.6 -27.5,13.7 C346.8,246 246,333.1 120.7,356 c-16.8,3 -29,16.8 -29,33.6 0,18.3 12.2,32.1 29,35.1 C246,447.6 346.8,534.7 427.8,631 c7.6,9.1 16.8,13.7 27.5,13.7 18.3,0 35.1,-13.7 35.1,-35.1 C490.4,572.9 385,496.5 314.7,424.7 l412.5,0 108.5,301 c3.1,9.2 12.2,15.3 21.4,15.3 18.3,0 27.5,-16.8 21.4,-30.6 L776.1,424.7 l385,0 C1089.3,499.6 985.4,574.4 985.4,609.6 c0,21.4 16.8,35.1 35.2,35.1 10.7,0 21.3,-4.6 27.5,-13.7 82.5,-96.3 181.8,-183.4 307,-206.3 16.8,-3 29.1,-16.8 29.1,-35.1 0,-16.8 -12.3,-30.6 -29.1,-33.6 C1229.9,333.1 1130.6,246 1048.1,149.7 c-6.2,-9.1 -16.8,-13.7 -27.5,-13.7 -18.4,0 -35.2,13.7 -35.2,35.1 0,36.7 107,113.1 175.7,183.3 l-411,0 L640.1,55 c-3,-9.2 -12.2,-15.3 -21.3,-15.3 z"/>\n\t\t\t\t\t</defs>\n\t\t\t\t</svg>\n`]
+			["equiv", `\t\t\t\t<svg style="display:block" width="19" height="18" viewBox="0 0 19 18">\n\t\t\t\t\t<g>\n\t\t\t\t\t\t<use transform="matrix(10,0,0,10,2.4,12.9)" xlink:href="#equiv_ref1"/>\n\t\t\t\t\t</g>\n\t\t\t\t\t<defs>\n\t\t\t\t\t\t<path id="equiv_ref1" transform="scale(0.001,-0.001)" d="M455.3,136 c-10.7,0 -19.9,4.6 -27.5,13.7 C346.8,246 246,333.1 120.7,356 c-16.8,3 -29,16.8 -29,33.6 0,18.3 12.2,32.1 29,35.1 C246,447.6 346.8,534.7 427.8,631 c7.6,9.1 16.8,13.7 27.5,13.7 18.3,0 35.1,-13.7 35.1,-35.1 C490.4,572.9 385,496.5 314.7,424.7 l846.4,0 C1089.3,499.6 985.4,574.4 985.4,609.6 c0,21.4 16.8,35.1 35.2,35.1 10.7,0 21.3,-4.6 27.5,-13.7 82.5,-96.3 181.8,-183.4 307,-206.3 16.8,-3 29.1,-16.8 29.1,-35.1 0,-16.8 -12.3,-30.6 -29.1,-33.6 C1229.9,333.1 1130.6,246 1048.1,149.7 c-6.2,-9.1 -16.8,-13.7 -27.5,-13.7 -18.4,0 -35.2,13.7 -35.2,35.1 0,36.7 107,113.1 175.7,183.3 l-846.4,0 C388.1,281.1 490.4,206.3 490.4,171.1 490.4,149.7 473.6,136 455.3,136 z"/>\n\t\t\t\t\t</defs>\n\t\t\t\t</svg>\n`],
+			["implied", `\t\t\t\t<svg style="display:block" width="17" height="18" viewBox="0 0 17 18">\n\t\t\t\t\t<g>\n\t\t\t\t\t\t<use transform="matrix(10,0,0,10,2.4,12.9)" xlink:href="#implied_ref1"/>\n\t\t\t\t\t</g>\n\t\t\t\t\t<defs>\n\t\t\t\t\t\t<path id="implied_ref1" transform="scale(0.001,-0.001)" d="M455.3,136 c-10.7,0 -19.9,4.6 -27.5,13.7 C346.8,246 246,333.1 120.7,356 c-16.8,3 -29,16.8 -29,33.6 0,18.3 12.2,32.1 29,35.1 C246,447.6 346.8,534.7 427.8,631 c7.6,9.1 16.8,13.7 27.5,13.7 18.3,0 35.1,-13.7 35.1,-35.1 C490.4,572.9 385,496.5 314.7,424.7 l831.1,0 c19.9,0 35.2,-15.3 35.2,-35.1 0,-18.3 -15.3,-35.2 -35.2,-35.2 l-831.1,0 C388.1,281.1 490.4,206.3 490.4,171.1 490.4,149.7 473.6,136 455.3,136 z"/>\n\t\t\t\t\t</defs>\n\t\t\t\t</svg>\n`],
+			["imply", `\t\t\t\t<svg style="display:block" width="17" height="18" viewBox="0 0 17 18">\n\t\t\t\t\t<g>\n\t\t\t\t\t\t<use transform="matrix(10,0,0,10,2.4,12.9)" xlink:href="#imply_ref1"/>\n\t\t\t\t\t</g>\n\t\t\t\t\t<defs>\n\t\t\t\t\t\t<path id="imply_ref1" transform="scale(0.001,-0.001)" d="M817.4,136 c-18.4,0 -35.2,13.7 -35.2,35.1 0,36.7 105.4,113.1 175.7,183.3 l-831.1,0 c-18.3,0 -35.1,16.9 -35.1,35.2 0,19.8 16.8,35.1 35.1,35.1 l831.1,0 C884.6,499.6 782.2,574.4 782.2,609.6 c0,21.4 16.8,35.1 35.2,35.1 10.7,0 19.8,-4.6 27.5,-13.7 80.9,-96.3 181.8,-183.4 307,-206.3 16.9,-3 29.1,-16.8 29.1,-35.1 0,-16.8 -12.2,-30.6 -29.1,-33.6 C1026.7,333.1 925.8,246 844.9,149.7 837.2,140.6 828.1,136 817.4,136 z"/>\n\t\t\t\t\t</defs>\n\t\t\t\t</svg>\n`],
+			["nand", `\t\t\t\t<svg style="display:block" width="11" height="18" viewBox="0 0 11 18">\n\t\t\t\t\t<g>\n\t\t\t\t\t\t<use transform="matrix(10,0,0,10,2.4,13)" xlink:href="#nand_ref1"/>\n\t\t\t\t\t</g>\n\t\t\t\t\t<defs>\n\t\t\t\t\t\t<path id="nand_ref1" transform="scale(0.001,-0.001)" d="M345.3,-230.6 c-18.4,0 -35.2,16.8 -35.2,35.1 l0,983.8 C236.8,715 161.9,612.6 126.8,612.6 c-21.4,0 -35.1,16.8 -35.1,35.2 0,10.7 4.6,19.8 12.2,27.5 97.8,81 184.9,181.8 207.8,307.1 3,16.8 16.8,29 33.6,29 18.3,0 32.1,-12.2 35.1,-29 C403.3,857.1 488.9,756.3 586.7,675.3 c9.1,-7.7 13.7,-16.8 13.7,-27.5 0,-18.4 -15.3,-35.2 -36.6,-35.2 -35.2,0 -111.6,105.5 -183.4,175.7 l0,-983.8 c0,-18.3 -15.3,-35.1 -35.1,-35.1 z"/>\n\t\t\t\t\t</defs>\n\t\t\t\t</svg>\n`],
+			["nece", `\t\t\t\t<svg style="display:block" width="16" height="18" viewBox="0 0 16 18">\n\t\t\t\t\t<g>\n\t\t\t\t\t\t<use transform="matrix(10,0,0,10,1.6,13)" xlink:href="#nece_ref1"/>\n\t\t\t\t\t</g>\n\t\t\t\t\t<defs>\n\t\t\t\t\t\t<path id="nece_ref1" transform="scale(0.001,-0.001)" d="M1170.3,-113 l0,1006.8 -1006.8,0 0,-1006.8 z m-1042,-70.2 c-19.8,0 -35.1,15.2 -35.1,35.1 l0,1077 c0,19.9 15.3,35.1 35.1,35.1 l1077.1,0 c21.4,0 35.2,-15.2 35.2,-35.1 l0,-1077 c0,-19.9 -13.8,-35.1 -35.2,-35.1 z"/>\n\t\t\t\t\t</defs>\n\t\t\t\t</svg>\n`],
+			["nimplied", `\t\t\t\t<svg style="display:block" width="17" height="18" viewBox="0 0 17 18">\n\t\t\t\t\t<g>\n\t\t\t\t\t\t<use transform="matrix(10,0,0,10,2.4,12.9)" xlink:href="#nimplied_ref1"/>\n\t\t\t\t\t</g>\n\t\t\t\t\t<defs>\n\t\t\t\t\t\t<path id="nimplied_ref1" transform="scale(0.001,-0.001)" d="M626.4,39.7 c-16.8,0 -26,16.8 -21.4,30.6 L708.9,354.4 l-394.2,0 C388.1,281.1 490.4,206.3 490.4,171.1 490.4,149.7 473.6,136 455.3,136 c-10.7,0 -19.9,4.6 -27.5,13.7 C346.8,246 246,333.1 120.7,356 c-16.8,3 -29,16.8 -29,33.6 0,18.3 12.2,32.1 29,35.1 C246,447.6 346.8,534.7 427.8,631 c7.6,9.1 16.8,13.7 27.5,13.7 18.3,0 35.1,-13.7 35.1,-35.1 C490.4,572.9 385,496.5 314.7,424.7 l420.2,0 108.4,301 c3.1,9.2 12.3,15.3 21.4,15.3 16.8,0 27.5,-16.8 21.4,-30.6 L782.2,424.7 l363.6,0 c19.9,0 35.2,-15.3 35.2,-35.1 0,-18.3 -15.3,-35.2 -35.2,-35.2 l-388,0 L647.8,55 C644.7,45.8 635.6,39.7 626.4,39.7 z"/>\n\t\t\t\t\t</defs>\n\t\t\t\t</svg>\n`],
+			["nimply", `\t\t\t\t<svg style="display:block" width="17" height="18" viewBox="0 0 17 18">\n\t\t\t\t\t<g>\n\t\t\t\t\t\t<use transform="matrix(10,0,0,10,2.4,12.9)" xlink:href="#nimply_ref1"/>\n\t\t\t\t\t</g>\n\t\t\t\t\t<defs>\n\t\t\t\t\t\t<path id="nimply_ref1" transform="scale(0.001,-0.001)" d="M407.9,39.7 c-16.8,0 -27.5,16.8 -21.4,30.6 L490.4,354.4 l-363.6,0 c-18.3,0 -35.1,16.9 -35.1,35.2 0,19.8 16.8,35.1 35.1,35.1 l388.1,0 110,301 c3,9.2 12.2,15.3 21.4,15.3 16.8,0 27.5,-16.8 21.3,-30.6 L563.8,424.7 l394.1,0 C884.6,499.6 782.2,574.4 782.2,609.6 c0,21.4 16.8,35.1 35.2,35.1 10.7,0 19.8,-4.6 27.5,-13.7 80.9,-96.3 181.8,-183.4 307,-206.3 16.9,-3 29.1,-16.8 29.1,-35.1 0,-16.8 -12.2,-30.6 -29.1,-33.6 C1026.7,333.1 925.8,246 844.9,149.7 837.2,140.6 828.1,136 817.4,136 c-18.4,0 -35.2,13.7 -35.2,35.1 0,36.7 105.4,113.1 175.7,183.3 l-418.6,0 L429.3,55 c-3,-9.2 -12.2,-15.3 -21.4,-15.3 z"/>\n\t\t\t\t\t</defs>\n\t\t\t\t</svg>\n`],
+			["nor", `\t\t\t\t<svg style="display:block" width="11" height="18" viewBox="0 0 11 18">\n\t\t\t\t\t<g>\n\t\t\t\t\t\t<use transform="matrix(10,0,0,10,2.4,13)" xlink:href="#nor_ref1"/>\n\t\t\t\t\t</g>\n\t\t\t\t\t<defs>\n\t\t\t\t\t\t<path id="nor_ref1" transform="scale(0.001,-0.001)" d="M345.3,-230.6 c-16.8,0 -30.6,12.2 -33.6,29 -22.9,125.3 -110,226 -207.8,307 -7.6,7.7 -12.2,16.8 -12.2,27.5 0,18.4 13.7,35.2 35.1,35.2 36.7,0 113.1,-105.5 183.3,-175.6 l0,983.8 c0,18.3 16.8,35.1 35.2,35.1 19.8,0 35.1,-16.8 35.1,-35.1 l0,-983.8 c74.9,73.2 148.2,175.6 183.4,175.6 21.3,0 36.6,-16.8 36.6,-35.2 0,-10.7 -4.6,-19.8 -13.7,-27.5 C488.9,24.4 403.3,-76.3 380.4,-201.6 c-3,-16.8 -16.8,-29 -35.1,-29 z"/>\n\t\t\t\t\t</defs>\n\t\t\t\t</svg>\n`],
+			["not", `\t\t\t\t<svg style="display:block" width="12" height="18" viewBox="0 0 12 18">\n\t\t\t\t\t<g>\n\t\t\t\t\t\t<use transform="matrix(10,0,0,10,1.6,12.8)" xlink:href="#not_ref1"/>\n\t\t\t\t\t</g>\n\t\t\t\t\t<defs>\n\t\t\t\t\t\t<path id="not_ref1" transform="scale(0.001,-0.001)" d="M791.4,82.5 c-19.9,0 -35.1,15.3 -35.1,35.1 l0,236.8 -629.5,0 c-18.3,0 -35.1,16.9 -35.1,35.2 0,19.8 16.8,35.1 35.1,35.1 l664.6,0 c19.9,0 35.1,-13.7 35.1,-35.1 l0,-272 c0,-19.8 -16.8,-35.1 -35.1,-35.1 z"/>\n\t\t\t\t\t</defs>\n\t\t\t\t</svg>\n`],
+			["obli", `\t\t\t\t<svg style="display:block" width="17" height="18" viewBox="0 0 17 18">\n\t\t\t\t\t<g>\n\t\t\t\t\t\t<use transform="matrix(10,0,0,10,1.6,13)" xlink:href="#obli_ref1"/>\n\t\t\t\t\t</g>\n\t\t\t\t\t<defs>\n\t\t\t\t\t\t<path id="obli_ref1" transform="scale(0.001,-0.001)" d="M737.9,-184.8 c310.2,0 576,249 576,574.4 0,310.1 -249,576 -576,576 -308.6,0 -576,-249.1 -576,-576 C161.9,81 411,-184.8 737.9,-184.8 z m0,-70.2 C391.1,-255 91.7,26 91.7,389.6 c0,348.3 281.1,646.2 646.2,646.2 348.4,0 646.3,-281.1 646.3,-646.2 C1384.2,42.8 1103.1,-255 737.9,-255 z"/>\n\t\t\t\t\t</defs>\n\t\t\t\t</svg>\n`],
+			["or", `\t\t\t\t<svg style="display:block" width="14" height="18" viewBox="0 0 14 18">\n\t\t\t\t\t<g>\n\t\t\t\t\t\t<use transform="matrix(10,0,0,10,2.4,12.8)" xlink:href="#or_ref1"/>\n\t\t\t\t\t</g>\n\t\t\t\t\t<defs>\n\t\t\t\t\t\t<path id="or_ref1" transform="scale(0.001,-0.001)" d="M458.3,22.9 c-13.7,0 -24.4,7.7 -30.5,19.9 L96.3,705.8 c-3.1,6.1 -4.6,10.7 -4.6,16.8 0,16.8 15.2,35.2 35.1,35.2 13.8,0 26,-7.7 32.1,-19.9 L458.3,137.5 l301,600.4 c6.1,12.2 18.3,19.9 32.1,19.9 19.9,0 35.1,-18.4 35.1,-35.2 0,-6.1 -1.5,-10.7 -4.6,-16.8 L490.4,42.8 C484.3,30.6 473.6,22.9 458.3,22.9 z"/>\n\t\t\t\t\t</defs>\n\t\t\t\t</svg>\n`],
+			["perm", `\t\t\t\t<svg style="display:block" width="14" height="18" viewBox="0 0 14 18">\n\t\t\t\t\t<g>\n\t\t\t\t\t\t<use transform="matrix(10,0,0,10,1.6,12.9)" xlink:href="#perm_ref1"/>\n\t\t\t\t\t</g>\n\t\t\t\t\t<defs>\n\t\t\t\t\t\t<path id="perm_ref1" transform="scale(0.001,-0.001)" d="M540.8,42.8 l496.6,496.5 c-136,125.3 -313.2,194 -496.6,194 -184.8,0 -362,-68.7 -496.5,-194 L540.8,42.8 z m-0.7,-73.3 c-8.1,0 -16.1,3.1 -22.2,9.2 L-21.3,517.9 c-12.2,12.2 -12.2,32.1 0,44.3 C126.8,710.4 330,794.4 540.8,794.4 c209.3,0 412.5,-84 560.7,-232.2 12.3,-12.2 12.3,-32.1 0,-44.3 L562.2,-21.3 c-6.1,-6.1 -14.1,-9.2 -22.1,-9.2 z"/>\n\t\t\t\t\t</defs>\n\t\t\t\t</svg>\n`],
+			["poss", `\t\t\t\t<svg style="display:block" width="15" height="18" viewBox="0 0 15 18">\n\t\t\t\t\t<g>\n\t\t\t\t\t\t<use transform="matrix(10,0,0,10,1.6,13)" xlink:href="#poss_ref1"/>\n\t\t\t\t\t</g>\n\t\t\t\t\t<defs>\n\t\t\t\t\t\t<path id="poss_ref1" transform="scale(0.001,-0.001)" d="M637.1,-67.1 l456.8,456.7 L637.1,847.9 178.8,389.6 637.1,-67.1 z m0,-85.6 c-9.2,0 -18.3,3.1 -26,10.7 L103.9,365.1 c-7.6,7.7 -10.7,16.8 -10.7,24.5 0,9.2 3.1,18.3 10.7,26 L611.1,922.8 c7.7,7.6 16.8,10.7 26,10.7 7.6,0 16.8,-3.1 24.4,-10.7 L1168.8,415.6 c7.6,-7.7 10.6,-16.8 10.6,-26 0,-7.7 -3,-16.8 -10.6,-24.5 L661.5,-142 c-7.6,-7.6 -16.8,-10.7 -24.4,-10.7 z"/>\n\t\t\t\t\t</defs>\n\t\t\t\t</svg>\n`],
+			["top", `\t\t\t\t<svg style="display:block" width="11" height="18" viewBox="0 0 11 18">\n\t\t\t\t\t<g>\n\t\t\t\t\t\t<use transform="matrix(10,0,0,10,1.6,13)" xlink:href="#top_ref1"/>\n\t\t\t\t\t</g>\n\t\t\t\t\t<defs>\n\t\t\t\t\t\t<path id="top_ref1" transform="scale(0.001,-0.001)" d="M424.7,-35 c-19.8,0 -35.1,15.2 -35.1,35 l0,745.6 -262.8,0 c-18.3,0 -35.1,15.2 -35.1,35.1 0,19.9 16.8,35.1 35.1,35.1 l594.3,0 c19.9,0 35.2,-15.2 35.2,-35.1 0,-19.9 -15.3,-35.1 -35.2,-35.1 l-261.2,0 L459.9,0 c0,-19.8 -16.8,-35 -35.2,-35 z"/>\n\t\t\t\t\t</defs>\n\t\t\t\t</svg>\n`],
+			["xor", `\t\t\t\t<svg style="display:block" width="19" height="18" viewBox="0 0 19 18">\n\t\t\t\t\t<g>\n\t\t\t\t\t\t<use transform="matrix(10,0,0,10,2.4,12.9)" xlink:href="#xor_ref1"/>\n\t\t\t\t\t</g>\n\t\t\t\t\t<defs>\n\t\t\t\t\t\t<path id="xor_ref1" transform="scale(0.001,-0.001)" d="M618.8,39.7 c-16.9,0 -26,16.8 -21.4,30.6 L701.3,354.4 l-386.6,0 C388.1,281.1 490.4,206.3 490.4,171.1 490.4,149.7 473.6,136 455.3,136 c-10.7,0 -19.9,4.6 -27.5,13.7 C346.8,246 246,333.1 120.7,356 c-16.8,3 -29,16.8 -29,33.6 0,18.3 12.2,32.1 29,35.1 C246,447.6 346.8,534.7 427.8,631 c7.6,9.1 16.8,13.7 27.5,13.7 18.3,0 35.1,-13.7 35.1,-35.1 C490.4,572.9 385,496.5 314.7,424.7 l412.5,0 108.5,301 c3.1,9.2 12.2,15.3 21.4,15.3 18.3,0 27.5,-16.8 21.4,-30.6 L776.1,424.7 l385,0 C1089.3,499.6 985.4,574.4 985.4,609.6 c0,21.4 16.8,35.1 35.2,35.1 10.7,0 21.3,-4.6 27.5,-13.7 82.5,-96.3 181.8,-183.4 307,-206.3 16.8,-3 29.1,-16.8 29.1,-35.1 0,-16.8 -12.3,-30.6 -29.1,-33.6 C1229.9,333.1 1130.6,246 1048.1,149.7 c-6.2,-9.1 -16.8,-13.7 -27.5,-13.7 -18.4,0 -35.2,13.7 -35.2,35.1 0,36.7 107,113.1 175.7,183.3 l-411,0 L640.1,55 c-3,-9.2 -12.2,-15.3 -21.3,-15.3 z"/>\n\t\t\t\t\t</defs>\n\t\t\t\t</svg>\n`]
 	]);
 
 	// Construction
@@ -161,13 +156,16 @@ class SvgTreeEngine {
 		this._symbolXShift = -0.5;
 		this._symbolYShift = 0.0;
 		this._symbolScale = 0.21;
+		this._webColor_background = "#f0f0f0";
 		this._webColor_edgeStroke = "#000";
 		this._svgNumber_edgeStrokeWidth = "0.15";
 		this._webColor_opVertexFill = "#ccf";
 		this._webColor_opVertexStroke = "#4040ff";
+		this._webColor_opVertexFont = "#000";
 		this._svgNumber_opVertexStrokeWidth = "0.2";
 		this._webColor_varVertexFill = "#ccc";
 		this._webColor_varVertexStroke = "#404040";
+		this._webColor_varVertexFont = "#000";
 		this._svgNumber_varVertexStrokeWidth = "0.2";
 		this._svgNumber_vertexRadius = "2.5";
 		this._layoutTree_minHorizontalSpace = 10.0;
@@ -234,6 +232,12 @@ class SvgTreeEngine {
 	setSymbolScale(value) {
 		this._symbolScale = value;
 	}
+	getWebColor_background() {
+		return this._webColor_background;
+	}
+	setWebColor_background(value) {
+		this._webColor_background = value;
+	}
 	getWebColor_edgeStroke() {
 		return this._webColor_edgeStroke;
 	}
@@ -258,6 +262,12 @@ class SvgTreeEngine {
 	setWebColor_opVertexStroke(value) {
 		this._webColor_opVertexStroke = value;
 	}
+	getWebColor_opVertexFont() {
+		return this._webColor_opVertexFont;
+	}
+	setWebColor_opVertexFont(value) {
+		this._webColor_opVertexFont = value;
+	}
 	getSvgNumber_opVertexStrokeWidth() {
 		return this._svgNumber_opVertexStrokeWidth;
 	}
@@ -275,6 +285,12 @@ class SvgTreeEngine {
 	}
 	setWebColor_varVertexStroke(value) {
 		this._webColor_varVertexStroke = value;
+	}
+	getWebColor_varVertexFont() {
+		return this._webColor_varVertexFont;
+	}
+	setWebColor_varVertexFont(value) {
+		this._webColor_varVertexFont = value;
 	}
 	getSvgNumber_varVertexStrokeWidth() {
 		return this._svgNumber_varVertexStrokeWidth;
@@ -302,7 +318,7 @@ class SvgTreeEngine {
 	}
 
 	// Svg creation functions
-	constructLayoutAndSvgTree(out_svgFile, layoutTreeEngine, tree, svgData, cmdPrefix, viewBoxOffsetX, viewBoxOffsetY, webColor_edgeStroke, svgNumber_edgeStrokeWidth, webColor_opVertexFill, webColor_opVertexStroke, svgNumber_opVertexStrokeWidth, webColor_varVertexFill, webColor_varVertexStroke, svgNumber_varVertexStrokeWidth, svgNumber_vertexRadius, symbolXShift, symbolYShift, symbolScale, avoidOverlaps) {
+	constructLayoutAndSvgTree(out_svgFile, layoutTreeEngine, tree, svgData, cmdPrefix, viewBoxOffsetX, viewBoxOffsetY, webColor_background, webColor_edgeStroke, svgNumber_edgeStrokeWidth, webColor_opVertexFill, webColor_opVertexStroke, webColor_opVertexFont, svgNumber_opVertexStrokeWidth, webColor_varVertexFill, webColor_varVertexStroke, webColor_varVertexFont, svgNumber_varVertexStrokeWidth, svgNumber_vertexRadius, symbolXShift, symbolYShift, symbolScale, avoidOverlaps) {
 		// Create layout tree
 		layoutTreeEngine.reset();
 		const nodeVec = [];
@@ -312,13 +328,13 @@ class SvgTreeEngine {
 		layoutTreeEngine.execute();
 
 		// Create svg tree
-		this.constructSvgTree(out_svgFile, layoutTreeEngine, svgData, cmdPrefix, viewBoxOffsetX, viewBoxOffsetY, webColor_edgeStroke, svgNumber_edgeStrokeWidth, webColor_opVertexFill, webColor_opVertexStroke, svgNumber_opVertexStrokeWidth, webColor_varVertexFill, webColor_varVertexStroke, svgNumber_varVertexStrokeWidth, svgNumber_vertexRadius, symbolXShift, symbolYShift, symbolScale, avoidOverlaps);
+		this.constructSvgTree(out_svgFile, layoutTreeEngine, svgData, cmdPrefix, viewBoxOffsetX, viewBoxOffsetY, webColor_background, webColor_edgeStroke, svgNumber_edgeStrokeWidth, webColor_opVertexFill, webColor_opVertexStroke, webColor_opVertexFont, svgNumber_opVertexStrokeWidth, webColor_varVertexFill, webColor_varVertexStroke, webColor_varVertexFont, svgNumber_varVertexStrokeWidth, svgNumber_vertexRadius, symbolXShift, symbolYShift, symbolScale, avoidOverlaps);
 	}
 
-	constructSvgTree(out_svgFile, layoutTreeEngine, svgData, cmdPrefix, viewBoxOffsetX, viewBoxOffsetY, webColor_edgeStroke, svgNumber_edgeStrokeWidth, webColor_opVertexFill, webColor_opVertexStroke, svgNumber_opVertexStrokeWidth, webColor_varVertexFill, webColor_varVertexStroke, svgNumber_varVertexStrokeWidth, svgNumber_vertexRadius, symbolXShift, symbolYShift, symbolScale, avoidOverlaps) {
+	constructSvgTree(out_svgFile, layoutTreeEngine, svgData, cmdPrefix, viewBoxOffsetX, viewBoxOffsetY, webColor_background, webColor_edgeStroke, svgNumber_edgeStrokeWidth, webColor_opVertexFill, webColor_opVertexStroke, webColor_opVertexFont, svgNumber_opVertexStrokeWidth, webColor_varVertexFill, webColor_varVertexStroke, webColor_varVertexFont, svgNumber_varVertexStrokeWidth, svgNumber_vertexRadius, symbolXShift, symbolYShift, symbolScale, avoidOverlaps) {
 		// Start creating new svg with specified viewBox.
 		const bounds = layoutTreeEngine.bounds();
-		out_svgFile.value = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="${5 * (bounds.width + 2 * viewBoxOffsetX)}px" height="${5 * (bounds.height + 2 * viewBoxOffsetY)}px" viewBox="${bounds.x - 2 * parseFloat(svgNumber_vertexRadius)} ${bounds.y - 2 * parseFloat(svgNumber_vertexRadius)} ${bounds.width + 2 * viewBoxOffsetX} ${bounds.height + 2 * viewBoxOffsetY}">\n\t<rect x="${bounds.x - 2 * parseFloat(svgNumber_vertexRadius)}" y="${bounds.y - 2 * parseFloat(svgNumber_vertexRadius)}" width="100%" height="100%" fill="#f0f0f0"/>\n`;
+		out_svgFile.value = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="${5 * (bounds.width + 2 * viewBoxOffsetX)}px" height="${5 * (bounds.height + 2 * viewBoxOffsetY)}px" viewBox="${bounds.x - 2 * parseFloat(svgNumber_vertexRadius)} ${bounds.y - 2 * parseFloat(svgNumber_vertexRadius)} ${bounds.width + 2 * viewBoxOffsetX} ${bounds.height + 2 * viewBoxOffsetY}">\n\t<rect x="${bounds.x - 2 * parseFloat(svgNumber_vertexRadius)}" y="${bounds.y - 2 * parseFloat(svgNumber_vertexRadius)}" width="100%" height="100%" fill="${webColor_background}"/>\n`;
 		let useElements = "";
 
 		// Create all edges
@@ -354,12 +370,12 @@ class SvgTreeEngine {
 			if (cmdPrefixPos === 0 && svgData.has(key)) { // The node label starts with the command prefix, and the command addresses an existing symbol.
 
 				// 1. Add link
-				useElements += this._addOperatorLinkToSvgElement(key, nodePtr.getX() + viewBoxOffsetX, nodePtr.getY() + viewBoxOffsetY);
+				useElements += this._operatorLink(key, nodePtr.getX() + viewBoxOffsetX, nodePtr.getY() + viewBoxOffsetY);
 
 				// 2. Add symbol to vertex library (if not present yet)
 				if (!usedKeys.includes(key)) { // the symbol was not already mentioned
 					usedKeys.push(key);
-					vertexLibrary += this._insertOperatorToVertexLibrary(key, "vertexCircle", svgData, symbolXShift, symbolYShift, symbolScale);
+					vertexLibrary += this._operatorForVertexLibrary(key, "vertexCircle", svgData, symbolXShift, symbolYShift, symbolScale, webColor_opVertexFont);
 				}
 			} else {
 
@@ -398,13 +414,13 @@ class SvgTreeEngine {
 					}
 
 				// 2. Add link
-				useElements += this._addTextLinksToSvgElement(variableName, "vertexSquare", nodePtr.getX() + viewBoxOffsetX, nodePtr.getY() + viewBoxOffsetY, symbolScale, svgNumber_vertexRadius, svgNumber_varVertexStrokeWidth);
+				useElements += this._textLinks(variableName, "vertexSquare", nodePtr.getX() + viewBoxOffsetX, nodePtr.getY() + viewBoxOffsetY, symbolScale, svgNumber_vertexRadius, svgNumber_varVertexStrokeWidth);
 
 				// 3. Add symbols to vertex library (if not present yet)
 				for (const symbol of variableName)
 					if (!usedNameSymbols.includes(symbol) && symbol !== "\\_") { // The symbol was not already mentioned, and its not a special command.
 						usedNameSymbols.push(symbol);
-						vertexLibrary += this._insertSymbolToVertexLibrary(symbol, svgData, symbolXShift, symbolYShift, symbolScale);
+						vertexLibrary += this._symbolForVertexLibrary(symbol, svgData, symbolXShift, symbolYShift, symbolScale, webColor_varVertexFont);
 					}
 			}
 		}
@@ -412,8 +428,8 @@ class SvgTreeEngine {
 	}
 
 	// Svg creation helper functions
-	_insertOperatorToVertexLibrary(id, destinationVertexId, svgData, symbolXShift, symbolYShift, symbolScale) {
-		let vertex = `\t\t<g id="${id}">\n\t\t\t<use xlink:href="#${destinationVertexId}"/>\n\t\t\t<g transform="`;
+	_operatorForVertexLibrary(id, destinationVertexId, svgData, symbolXShift, symbolYShift, symbolScale, webColor_opVertexFont) {
+		let vertex = `\t\t<g id="${id}">\n\t\t\t<use xlink:href="#${destinationVertexId}"/>\n\t\t\t<g fill="${webColor_opVertexFont}" transform="`;
 		const getWH = (width) => {
 			let pos = svgChild.indexOf(width ? `width="` : `height="`);
 			if (pos === -1)
@@ -433,18 +449,18 @@ class SvgTreeEngine {
 		return vertex;
 	}
 
-	_addOperatorLinkToSvgElement(destinationId, relPosX, relPosY) {
+	_operatorLink(destinationId, relPosX, relPosY) {
 		return `\t<use transform="translate(${relPosX},${relPosY})" xlink:href="#${destinationId}"/>\n`;
 	}
 
-	_insertSymbolToVertexLibrary(id, svgData, symbolXShift, symbolYShift, symbolScale) {
+	_symbolForVertexLibrary(id, svgData, symbolXShift, symbolYShift, symbolScale, webColor_varVertexFont) {
 		let symbolInfo = __characterPathData.has(id) ? __characterPathData.get(id) : __specialSymbolPathData.get(id); // Note that some Unicode chars have greater length than 1 in UTF-8, so we cannot know that a symbol is not in __characterPathData by its length being greater than 1.
 		let shiftX = 0;
 		let shiftY = (-symbolInfo.height / 2) + symbolYShift;
-		return `\t\t<g id="var_${id}">\n\t\t\t<g transform="scale(${symbolScale}) translate(${shiftX},${shiftY}) ${symbolInfo.postTransform}">\n\t\t\t\t<path transform="${symbolInfo.preTransform}" d="${symbolInfo.path}"/>\n\t\t\t</g>\n\t\t</g>\n`;
+		return `\t\t<g id="var_${id}" fill="${webColor_varVertexFont}">\n\t\t\t<g transform="scale(${symbolScale}) translate(${shiftX},${shiftY}) ${symbolInfo.postTransform}">\n\t\t\t\t<path transform="${symbolInfo.preTransform}" d="${symbolInfo.path}"/>\n\t\t\t</g>\n\t\t</g>\n`;
 	}
 
-	_addTextLinksToSvgElement(variableName, destinationVertexId, relPosX, relPosY, symbolScale, svgNumber_vertexRadius, svgNumber_varVertexStrokeWidth) {
+	_textLinks(variableName, destinationVertexId, relPosX, relPosY, symbolScale, svgNumber_vertexRadius, svgNumber_varVertexStrokeWidth) {
 		// 1. Create vertex
 		let svg = `\t<use transform="translate(${relPosX},${relPosY})" xlink:href="#${destinationVertexId}"/>\n`;
 
@@ -494,10 +510,10 @@ class SvgTreeEngine {
 	// cmdPrefix : Prefix of every special vertex (only print special symbol for layout nodes whose string starts with it, such that the rest is a key in svgData)
 	execute(tree, svgData, cmdPrefix) {
 		this._tree = tree;
-		this.constructLayoutAndSvgTree(this._svgFile, this._layoutTreeEngine, this._tree, svgData, cmdPrefix, this._viewBoxOffsetX, this._viewBoxOffsetY, this._webColor_edgeStroke, this._svgNumber_edgeStrokeWidth, this._webColor_opVertexFill, this._webColor_opVertexStroke, this._svgNumber_opVertexStrokeWidth, this._webColor_varVertexFill, this._webColor_varVertexStroke, this._svgNumber_varVertexStrokeWidth, this._svgNumber_vertexRadius, this._symbolXShift, this._symbolYShift, this._symbolScale, this._avoidOverlaps);
+		this.constructLayoutAndSvgTree(this._svgFile, this._layoutTreeEngine, this._tree, svgData, cmdPrefix, this._viewBoxOffsetX, this._viewBoxOffsetY, this._webColor_background, this._webColor_edgeStroke, this._svgNumber_edgeStrokeWidth, this._webColor_opVertexFill, this._webColor_opVertexStroke, this._webColor_opVertexFont, this._svgNumber_opVertexStrokeWidth, this._webColor_varVertexFill, this._webColor_varVertexStroke, this._webColor_varVertexFont, this._svgNumber_varVertexStrokeWidth, this._svgNumber_vertexRadius, this._symbolXShift, this._symbolYShift, this._symbolScale, this._avoidOverlaps);
 	}
 	// Should only use this after once execute() was called to construct layout.
 	executeWithoutLayoutConstruction(svgData, cmdPrefix) {
-		constructSvgTree(this._svgFile, this._layoutTreeEngine, svgData, cmdPrefix, this._viewBoxOffsetX, this._viewBoxOffsetY, this._webColor_edgeStroke, this._svgNumber_edgeStrokeWidth, this._webColor_opVertexFill, this._webColor_opVertexStroke, this._svgNumber_opVertexStrokeWidth, this._webColor_varVertexFill, this._webColor_varVertexStroke, this._svgNumber_varVertexStrokeWidth, this._svgNumber_vertexRadius, this._symbolXShift, this._symbolYShift, this._symbolScale, this._avoidOverlaps);
+		constructSvgTree(this._svgFile, this._layoutTreeEngine, svgData, cmdPrefix, this._viewBoxOffsetX, this._viewBoxOffsetY, this._webColor_background, this._webColor_edgeStroke, this._svgNumber_edgeStrokeWidth, this._webColor_opVertexFill, this._webColor_opVertexStroke, this._webColor_opVertexFont, this._svgNumber_opVertexStrokeWidth, this._webColor_varVertexFill, this._webColor_varVertexStroke, this._webColor_varVertexFont, this._svgNumber_varVertexStrokeWidth, this._svgNumber_vertexRadius, this._symbolXShift, this._symbolYShift, this._symbolScale, this._avoidOverlaps);
 	}
 }

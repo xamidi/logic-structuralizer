@@ -1,7 +1,5 @@
 class LayoutTreeNode {
 	constructor(value) {
-		//if (!value) //### TODO
-		//	throw new Error("LayoutTreeNode: Value cannot be null.");
 		this._value = value;
 		this._thread = null;
 		this._ancestor = null;
