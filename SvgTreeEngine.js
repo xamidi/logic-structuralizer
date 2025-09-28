@@ -334,7 +334,11 @@ class SvgTreeEngine {
 	constructSvgTree(out_svgFile, layoutTreeEngine, svgData, cmdPrefix, viewBoxOffsetX, viewBoxOffsetY, webColor_background, webColor_edgeStroke, svgNumber_edgeStrokeWidth, webColor_opVertexFill, webColor_opVertexStroke, webColor_opVertexFont, svgNumber_opVertexStrokeWidth, webColor_varVertexFill, webColor_varVertexStroke, webColor_varVertexFont, svgNumber_varVertexStrokeWidth, svgNumber_vertexRadius, symbolXShift, symbolYShift, symbolScale, avoidOverlaps) {
 		// Start creating new svg with specified viewBox.
 		const bounds = layoutTreeEngine.bounds();
-		out_svgFile.value = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="${5 * (bounds.width + 2 * viewBoxOffsetX)}px" height="${5 * (bounds.height + 2 * viewBoxOffsetY)}px" viewBox="${bounds.x - 2 * parseFloat(svgNumber_vertexRadius)} ${bounds.y - 2 * parseFloat(svgNumber_vertexRadius)} ${bounds.width + 2 * viewBoxOffsetX} ${bounds.height + 2 * viewBoxOffsetY}">\n\t<rect x="${bounds.x - 2 * parseFloat(svgNumber_vertexRadius)}" y="${bounds.y - 2 * parseFloat(svgNumber_vertexRadius)}" width="100%" height="100%" fill="${webColor_background}"/>\n`;
+		const viewBox_x = bounds.x - 2 * parseFloat(svgNumber_vertexRadius);
+		const viewBox_y = bounds.y - 2 * parseFloat(svgNumber_vertexRadius);
+		const viewBox_w = bounds.width + 2 * viewBoxOffsetX;
+		const viewBox_h = bounds.height + 2 * viewBoxOffsetY;
+		out_svgFile.value = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="${5 * viewBox_w}px" height="${5 * viewBox_h}px" viewBox="${viewBox_x} ${viewBox_y} ${viewBox_w} ${viewBox_h}">\n\t<rect x="${viewBox_x}" y="${viewBox_y}" width="100%" height="100%" fill="${webColor_background}"/>\n`;
 		let useElements = "";
 
 		// Create all edges

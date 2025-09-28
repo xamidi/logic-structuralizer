@@ -136,6 +136,9 @@ function setParseTreeColors(opFill, opStroke, opFont, varFill, varStroke, varFon
 window.onload = function() {
 	const btnPaletteLight = document.getElementById("btnPaletteLight");
 	const btnPaletteDark = document.getElementById("btnPaletteDark");
+	const btnPaletteTest1 = document.getElementById("btnPaletteTest1");
+	const btnPaletteTest2 = document.getElementById("btnPaletteTest2");
+	const btnPaletteTest3 = document.getElementById("btnPaletteTest3");
 	const error = document.getElementById("error");
 	const inputNormal = document.getElementById('inputNormal');
 	const txtInputNormal = document.getElementById("txtInputNormal");
@@ -183,6 +186,15 @@ window.onload = function() {
 	});
 	btnPaletteDark.addEventListener("click", function() {
 		setParseTreeColors("#b4b1f8", "#67449f", "#116", "#d1dff1", "#67449f", "#116", "#ffe3ff", "#171717");
+	});
+	btnPaletteTest1.addEventListener("click", function() {
+		setParseTreeColors("#aa311a", "#de4428", "gold", "#fa873d", "#f9690c", "#000", "#f00", "#171717");
+	});
+	btnPaletteTest2.addEventListener("click", function() {
+		setParseTreeColors("#aa1a31", "#de2844", "gold", "#fa3d87", "#f90c69", "#000", "#f00", "#171717");
+	});
+	btnPaletteTest3.addEventListener("click", function() {
+		setParseTreeColors("#d675d6", "#ae3da7", "#74296f", "#cfffff", "#177e84", "#13666a", "#e0aeff", "#171717");
 	});
 
 	// Formulas to illustrate syntax tree capabilities
@@ -430,6 +442,10 @@ window.onload = function() {
 						<br>overlaps
 					</p>
 					<br>
+					<p class="ls" style="margin-left:12px"><button id="btnPaletteTest1" title="Paste colors for acacia color scheme" class="actB lt" style="border-width:.1px">preset:&nbsp;acacia</button>
+					<br><button id="btnPaletteTest2" title="Paste colors for dragon color scheme" class="actB lt" style="border-width:.1px">preset:&nbsp;dragon</button>
+					<br><button id="btnPaletteTest3" title="Paste colors for charme color scheme" class="actB lt" style="border-width:.1px">preset:&nbsp;charme</button>
+					</p>
 				</div>
 				<div style="display:flex;flex-direction:row">
 					<p class="ls" style="margin-top:1px;margin-bottom:12px"><b>Structuralizer</b></p>
@@ -466,7 +482,7 @@ window.onload = function() {
 					<p class="ls" style="margin-top:1px;margin-bottom:12px">• Input and output fields have play and copy buttons next to them, respectively. Input fields are supporting Undo, Redo, and Enter.
 						<br>• You may import examples to illustrate input formats. Furthermore, conclusion formulas can be omitted from proof summary steps.
 						<br>• The syntax tree generator supports special symbols and more operators than the structuralizer, but hides unsupported characters.
-						<br>• There is a wealth of suitable data at <a target="_blank" href="https://github.com/xamidi/pmGenerator">github.com/xamidi/pmGenerator</a>. This is also the source of the importable examples.
+						<br>• There is a wealth of suitable data at <a target="_blank" href="https://github.com/xamidi/pmGenerator">github.com/xamidi/pmGenerator</a>. This is also the source of the importable examples m, w1, …, w6.
 					</p>
 				</div>
 			</details>
