@@ -119,6 +119,18 @@ const __specialSymbolPathData = new Map([
 	["kappa", new SymbolInfo(8.8, 19, "scale(0.001,-0.001)", "matrix(10,0,0,10,0,13)", "M128,-16C105,-16,84,-2,84,24c0,11,0,14,6,36L231,620c13,55,56,55,61,55c26,0,44,-15,44,-41c0,-8,-18,-79,-27,-119C301,489,283,413,278,396c55,18,92,41,196,130c67,56,157,132,250,132c55,0,61,-39,61,-53c0,-38,-33,-82,-82,-82c-48,0,-58,35,-58,53c0,8,4,26,7,34C591,584,547,547,477,487C435,452,387,411,336,383c86,-3,297,-13,297,-157c0,-17,-5,-37,-8,-50C619,150,613,113,613,90c0,-53,16,-73,49,-73c68,0,103,84,132,189c5,22,7,28,22,28c4,0,18,0,18,-16c0,-3,-18,-91,-56,-155C747,11,707,-16,658,-16C579,-16,518,44,518,134c0,13,1,29,8,54c3,15,3,23,3,34c0,99,-133,125,-262,129C202,95,211,124,196,69C183,20,174,-16,128,-16Z")],
 ]);
 
+function trim(num) {
+	let s = FctHelper.round(num, 6);
+	while (s.endsWith('0')) {
+		s = s.slice(0, -1);
+		if (s.endsWith('.')) {
+			s = s.slice(0, -1);
+			break;
+		}
+	}
+	return s;
+}
+
 class SvgTreeEngine {
 	// Operators for propositional modal logic (alethic + deontic)
 	static operatorSvgData = new Map([
@@ -334,10 +346,10 @@ class SvgTreeEngine {
 	constructSvgTree(out_svgFile, layoutTreeEngine, svgData, cmdPrefix, viewBoxOffsetX, viewBoxOffsetY, webColor_background, webColor_edgeStroke, svgNumber_edgeStrokeWidth, webColor_opVertexFill, webColor_opVertexStroke, webColor_opVertexFont, svgNumber_opVertexStrokeWidth, webColor_varVertexFill, webColor_varVertexStroke, webColor_varVertexFont, svgNumber_varVertexStrokeWidth, svgNumber_vertexRadius, symbolXShift, symbolYShift, symbolScale, avoidOverlaps) {
 		// Start creating new svg with specified viewBox.
 		const bounds = layoutTreeEngine.bounds();
-		const viewBox_x = bounds.x - 2 * parseFloat(svgNumber_vertexRadius);
-		const viewBox_y = bounds.y - 2 * parseFloat(svgNumber_vertexRadius);
-		const viewBox_w = bounds.width + 2 * viewBoxOffsetX;
-		const viewBox_h = bounds.height + 2 * viewBoxOffsetY;
+		const viewBox_x = trim(bounds.x - 2 * parseFloat(svgNumber_vertexRadius));
+		const viewBox_y = trim(bounds.y - 2 * parseFloat(svgNumber_vertexRadius));
+		const viewBox_w = trim(bounds.width + 2 * viewBoxOffsetX);
+		const viewBox_h = trim(bounds.height + 2 * viewBoxOffsetY);
 		out_svgFile.value = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="${5 * viewBox_w}px" height="${5 * viewBox_h}px" viewBox="${viewBox_x} ${viewBox_y} ${viewBox_w} ${viewBox_h}">\n\t<rect x="${viewBox_x}" y="${viewBox_y}" width="100%" height="100%" fill="${webColor_background}"/>\n`;
 		let useElements = "";
 
@@ -348,7 +360,7 @@ class SvgTreeEngine {
 				let vertexRadius;
 				if (avoidOverlaps)
 					vertexRadius = parseFloat(svgNumber_vertexRadius);
-				const edge = `\t<line style="fill:none; stroke:${webColor_edgeStroke}; stroke-width:${svgNumber_edgeStrokeWidth}" x1="${node.getX() + viewBoxOffsetX}" y1="${avoidOverlaps ? node.getY() + viewBoxOffsetY + vertexRadius : node.getY() + viewBoxOffsetY}" x2="${childNode.getX() + viewBoxOffsetX}" y2="${avoidOverlaps ? childNode.getY() + viewBoxOffsetY - vertexRadius : childNode.getY() + viewBoxOffsetY}"/>\n`;
+				const edge = `\t<line style="fill:none; stroke:${webColor_edgeStroke}; stroke-width:${svgNumber_edgeStrokeWidth}" x1="${trim(node.getX() + viewBoxOffsetX)}" y1="${trim(avoidOverlaps ? node.getY() + viewBoxOffsetY + vertexRadius : node.getY() + viewBoxOffsetY)}" x2="${trim(childNode.getX() + viewBoxOffsetX)}" y2="${trim(avoidOverlaps ? childNode.getY() + viewBoxOffsetY - vertexRadius : childNode.getY() + viewBoxOffsetY)}"/>\n`;
 				out_svgFile.value += edge; // add edge to svg file
 			}
 		}
@@ -357,7 +369,7 @@ class SvgTreeEngine {
 		const vertexCircle = `\t\t<circle id="vertexCircle" style="fill:${webColor_opVertexFill}; stroke:${webColor_opVertexStroke}; stroke-width:${svgNumber_opVertexStrokeWidth}" cx="0" cy="0" r="${svgNumber_vertexRadius}"/>\n`;
 
 		// Create a square to be used for variable vertices.
-		const vertexSquare = `\t\t<rect id="vertexSquare" style="fill:${webColor_varVertexFill}; stroke:${webColor_varVertexStroke}; stroke-width:${svgNumber_varVertexStrokeWidth}" x="-${svgNumber_vertexRadius}" y="-${svgNumber_vertexRadius}" width="${2 * parseFloat(svgNumber_vertexRadius)}" height="${2 * parseFloat(svgNumber_vertexRadius)}"/>\n`;
+		const vertexSquare = `\t\t<rect id="vertexSquare" style="fill:${webColor_varVertexFill}; stroke:${webColor_varVertexStroke}; stroke-width:${svgNumber_varVertexStrokeWidth}" x="-${svgNumber_vertexRadius}" y="-${svgNumber_vertexRadius}" width="${trim(2 * parseFloat(svgNumber_vertexRadius))}" height="${trim(2 * parseFloat(svgNumber_vertexRadius))}"/>\n`;
 
 		// Start creating vertex library.
 		let vertexLibrary = `\t<defs id="vertexLibrary">\n` + vertexCircle + vertexSquare;
@@ -440,7 +452,7 @@ class SvgTreeEngine {
 				throw `missing ${width ? "width" : "height"} from SVG`;
 			pos += (width ? 7 : 8);
 			const end = svgChild.indexOf(`"`, pos);
-			if (pos === -1)
+			if (end === -1)
 				throw `missing '"' after ${width ? "width" : "height"} from SVG`;
 			return parseInt(svgChild.substring(pos, end));
 		};
@@ -449,24 +461,24 @@ class SvgTreeEngine {
 		let svgChild = svgData.get(id);
 		let shiftX = (-getWH(true) / 2) + symbolXShift;
 		let shiftY = (-getWH(false) / 2) + symbolYShift;
-		vertex += `scale(${symbolScale}) translate(${shiftX},${shiftY})">\n${svgChild}\t\t\t</g>\n\t\t</g>\n`;
+		vertex += `scale(${symbolScale}) translate(${trim(shiftX)},${trim(shiftY)})">\n${svgChild}\t\t\t</g>\n\t\t</g>\n`;
 		return vertex;
 	}
 
 	_operatorLink(destinationId, relPosX, relPosY) {
-		return `\t<use transform="translate(${relPosX},${relPosY})" xlink:href="#${destinationId}"/>\n`;
+		return `\t<use transform="translate(${trim(relPosX)},${trim(relPosY)})" xlink:href="#${destinationId}"/>\n`;
 	}
 
 	_symbolForVertexLibrary(id, svgData, symbolXShift, symbolYShift, symbolScale, webColor_varVertexFont) {
-		let symbolInfo = __characterPathData.has(id) ? __characterPathData.get(id) : __specialSymbolPathData.get(id); // Note that some Unicode chars have greater length than 1 in UTF-8, so we cannot know that a symbol is not in __characterPathData by its length being greater than 1.
-		let shiftX = 0;
+		const regularSymbolInfo = __characterPathData.get(id);
+		let symbolInfo = regularSymbolInfo !== undefined ? regularSymbolInfo : __specialSymbolPathData.get(id);
 		let shiftY = (-symbolInfo.height / 2) + symbolYShift;
-		return `\t\t<g id="var_${id}" fill="${webColor_varVertexFont}">\n\t\t\t<g transform="scale(${symbolScale}) translate(${shiftX},${shiftY}) ${symbolInfo.postTransform}">\n\t\t\t\t<path transform="${symbolInfo.preTransform}" d="${symbolInfo.path}"/>\n\t\t\t</g>\n\t\t</g>\n`;
+		return `\t\t<g id="var_${id}" fill="${webColor_varVertexFont}">\n\t\t\t<g transform="scale(${symbolScale}) translate(0,${trim(shiftY)}) ${symbolInfo.postTransform}">\n\t\t\t\t<path transform="${symbolInfo.preTransform}" d="${symbolInfo.path}"/>\n\t\t\t</g>\n\t\t</g>\n`;
 	}
 
 	_textLinks(variableName, destinationVertexId, relPosX, relPosY, symbolScale, svgNumber_vertexRadius, svgNumber_varVertexStrokeWidth) {
 		// 1. Create vertex
-		let svg = `\t<use transform="translate(${relPosX},${relPosY})" xlink:href="#${destinationVertexId}"/>\n`;
+		let svg = `\t<use transform="translate(${trim(relPosX)},${trim(relPosY)})" xlink:href="#${destinationVertexId}"/>\n`;
 
 		// 2. Create font inside of vertex
 		const width = (parseFloat(svgNumber_vertexRadius) - parseFloat(svgNumber_varVertexStrokeWidth)) * 2;
@@ -474,7 +486,8 @@ class SvgTreeEngine {
 		let nextBaseNotation = false;
 		for (const symbol of variableName) {
 			if (symbol.length === 1 || !symbol.startsWith("\\")) {
-				trueWidth += (__characterPathData.has(symbol) ? __characterPathData.get(symbol).width : __specialSymbolPathData.get(symbol).width) * symbolScale * (nextBaseNotation ? 0.7 : 1.0); // Note that some Unicode chars have greater length than 1 in UTF-8, so we cannot know that a symbol is not in __characterPathData by its length being greater than 1.
+				const regularSymbolInfo = __characterPathData.get(symbol);
+				trueWidth += (regularSymbolInfo !== undefined ? regularSymbolInfo.width : __specialSymbolPathData.get(symbol).width) * symbolScale * (nextBaseNotation ? 0.7 : 1.0);
 				nextBaseNotation = false;
 			} else {
 				if (symbol === "\\_")
@@ -490,15 +503,16 @@ class SvgTreeEngine {
 		nextBaseNotation = false;
 		for (const symbol of variableName)
 			if (symbol.length === 1 || !symbol.startsWith("\\")) { // If we're not at a special command, i.e. symbol.length() == 1 or symbol does not start with "\\".
-				const useSpecialSymbols = !__characterPathData.has(symbol); // Note that some Unicode chars have greater length than 1 in UTF-8, so we cannot know that a symbol is not in __characterPathData by its length being greater than 1.
-				let transformStr = `translate(${relPosX + offsetX - leftShift},${relPosY})`;
+				const regularSymbolInfo = __characterPathData.get(symbol);
+				const useSpecialSymbols = regularSymbolInfo === undefined;
+				let transformStr = `translate(${trim(relPosX + offsetX - leftShift)},${trim(relPosY)})`;
 				if (trueWidth > width)
-					transformStr += ` scale(${shrinkFactor})`;
+					transformStr += ` scale(${trim(shrinkFactor)})`;
 				if (nextBaseNotation)
-					transformStr += ` scale(0.7) translate(0,${(useSpecialSymbols ? __specialSymbolPathData.get(symbol).height : __characterPathData.get(symbol).height) * symbolScale * 0.42})`;
+					transformStr += ` scale(0.7) translate(0,${trim((useSpecialSymbols ? __specialSymbolPathData.get(symbol).height : regularSymbolInfo.height) * symbolScale * 0.42)})`;
 				svg += `\t<use transform="${transformStr}" xlink:href="#var_${symbol}"/>\n`;
 
-				offsetX += (useSpecialSymbols ? __specialSymbolPathData.get(symbol).width : __characterPathData.get(symbol).width) * symbolScale * (nextBaseNotation ? 0.7 : 1.0) * shrinkFactor;
+				offsetX += (useSpecialSymbols ? __specialSymbolPathData.get(symbol).width : regularSymbolInfo.width) * symbolScale * (nextBaseNotation ? 0.7 : 1.0) * shrinkFactor;
 				nextBaseNotation = false;
 			} else {
 				if (symbol === "\\_")

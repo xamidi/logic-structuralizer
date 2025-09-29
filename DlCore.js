@@ -145,11 +145,11 @@ class DlCore {
 					console.error(`Warning: Variable '${input[start + 1]}' from "<${input[start + 1]}>" might be merged. To circumvent this, avoid names 'a', 'b', ..., 'z' for variables that occur as 27th or later.`);
 				stack.push(new DlFormula(input.substring(start + 1, i))); // substr(start + 1, i - start - 1) = substring(start + 1, start + 1 + i - start - 1)
 				i = start;
-			} else { //### TODO: make use of undefined rather than two lookups
-				if (!operators.has(c))
+			} else {
+				const op = operators.get(c);
+				if (op === undefined)
 					stack.push(new DlFormula(c));
 				else { // NOTE: It is assumed that all operators are addressed by 'operators', everything else will be treated as a variable.
-					const op = operators.get(c);
 					const arity = DlCore.dlOperatorArity(op);
 					if (stack.length < arity) {
 						if (debug)
@@ -199,7 +199,8 @@ class DlCore {
 				stack.push(new DlFormula(input.substring(i + 1, varLast + 1))); // register completed variable ; substr(i + 1, varLast - i) = substring(i + 1, i + 1 + varLast - i)
 				varLast = -1;
 			} else {
-				if (!operators.has(c)) {
+				const op = operators.get(c);
+				if (op === undefined) {
 					if (varLast === -1)
 						varLast = i;
 				} else { // It is assumed that all operators are addressed by 'operators', everything else will be treated as a variable.
@@ -207,7 +208,6 @@ class DlCore {
 						stack.push(new DlFormula(input.substring(i + 1, varLast + 1))); // first register completed variable ; substr(i + 1, varLast - i) = substring(i + 1, i + 1 + varLast - i)
 						varLast = -1;
 					}
-					const op = operators.get(c);
 					const arity = DlCore.dlOperatorArity(op);
 					if (stack.length < arity) {
 						if (debug)
@@ -252,26 +252,32 @@ class DlCore {
 		const recurse = (node) => {
 			const valToString = (s) => {
 				// 1. Operator names
-				if (operatorTranslations.has(s))
-					return operatorTranslations.get(s);
-				if (operatorNames.has(s)) {
-					operatorTranslations.set(s, operatorNames.get(s));
-					return operatorTranslations.get(s);
+				const op_t = operatorTranslations.get(s);
+				if (op_t !== undefined)
+					return op_t;
+				const op_n = operatorNames.get(s);
+				if (op_n !== undefined) {
+					operatorTranslations.set(s, op_n);
+					return op_n;
 				}
 				if (DlCore.dlOperators.has(s)) {
-					operatorTranslations.set(s, `<${s}>`); // unsupported operator
-					return operatorTranslations.get(s);
+					const op_s = `<${s}>`;
+					operatorTranslations.set(s, op_s); // unsupported operator
+					return op_s;
 				}
 
 				// 2. Variable names
-				if (variableTranslations.has(s))
-					return variableTranslations.get(s);
+				const var_t = variableTranslations.get(s);
+				if (var_t !== undefined)
+					return var_t;
 				if (nextVariableIndex >= sequenceOfVarNames.length) {
-					variableTranslations.set(s, `<${s}>`); // unsupported variable
-					return variableTranslations.get(s);
+					const var_s = `<${s}>`;
+					variableTranslations.set(s, var_s); // unsupported variable
+					return var_s;
 				}
-				variableTranslations.set(s, sequenceOfVarNames[nextVariableIndex++]);
-				return variableTranslations.get(s);
+				const var_n = sequenceOfVarNames[nextVariableIndex++];
+				variableTranslations.set(s, var_n);
+				return var_n;
 			};
 			let str = valToString(node.getValue());
 			for (let i = 0; i < node.getChildren().length; i++) {
@@ -287,9 +293,10 @@ class DlCore {
 		const recurse = (node, startsWithVar, endsWithVar) => {
 			const valToString = (s) => {
 				// 1. Operator names
-				if (operatorNames.has(s)) {
+				const op = operatorNames.get(s);
+				if (op !== undefined) {
 					startsWithVar.value = false;
-					return operatorNames.get(s);
+					return op;
 				}
 
 				// 2. Variable names
@@ -352,9 +359,10 @@ class DlCore {
 		const recurse = (node, startsWithVar, endsWithVar) => {
 			const valToString = (s) => {
 				// 1. Operator names
-				if (operatorNames.has(s)) {
+				const op = operatorNames.get(s);
+				if (op !== undefined) {
 					startsWithVar.value = false;
-					return operatorNames.get(s);
+					return op;
 				}
 
 				// 2. Variable names
