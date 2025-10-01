@@ -220,7 +220,7 @@ window.onload = function() {
 			let cNode = { value: null };
 			if (DlCore.fromPolishNotation(cNode, inputString, false, true)) {
 				setTxt(txtInputDotted, DlCore.toPolishNotation_numVars(cNode.value));
-				let svg = GalacticSvgGenerator.fromFormula(getFontHeigth(), inputString, "svg1", getPlain(), true, getPaddingL(), getPaddingT(), getPaddingR(), getPaddingB(), getDebug());
+				let svg = GalacticSvgGenerator.fromFormula(getFontHeigth(), inputString, "svgFormula", getPlain(), true, getPaddingL(), getPaddingT(), getPaddingR(), getPaddingB(), getDebug());
 				setTxtRaw(txtInfixFormula, DlCore.formulaRepresentation_unicode(cNode.value));
 				setSyntaxTree(cNode.value, targetSvgSyntaxTree, txtSvgSyntaxTree);
 				setTxtRaw(txtSvgStructural, svg);
@@ -258,7 +258,7 @@ window.onload = function() {
 			let cNode = { value: null };
 			if (DlCore.fromPolishNotation_noRename(cNode, inputString, false, true)) {
 				setTxt(txtInputNormal, DlCore.toPolishNotation(cNode.value));
-				let svg = GalacticSvgGenerator.fromFormula(getFontHeigth(), inputString, "svg1", getPlain(), false, getPaddingL(), getPaddingT(), getPaddingR(), getPaddingB(), getDebug());
+				let svg = GalacticSvgGenerator.fromFormula(getFontHeigth(), inputString, "svgFormula", getPlain(), false, getPaddingL(), getPaddingT(), getPaddingR(), getPaddingB(), getDebug());
 				setTxtRaw(txtInfixFormula, DlCore.formulaRepresentation_unicode(cNode.value));
 				setSyntaxTree(cNode.value, targetSvgSyntaxTree, txtSvgSyntaxTree);
 				setTxtRaw(txtSvgStructural, svg);
@@ -293,7 +293,7 @@ window.onload = function() {
 	btnApplyDProof.addEventListener("click", function() {
 		const inputString = txtInputDProof.value;
 		try {
-			let svg = GalacticSvgGenerator.fromProof(getFontHeigth(), inputString, "svg2", getPlain(), getPaddingL(), getPaddingT(), getPaddingR(), getPaddingB(), getDebug());
+			let svg = GalacticSvgGenerator.fromProof(getFontHeigth(), inputString, "svgProof", getPlain(), getPaddingL(), getPaddingT(), getPaddingR(), getPaddingB(), getDebug());
 			if (svg === undefined)
 				throw "conversion failed";
 			setTxtRaw(txtSvgStructural, svg);
@@ -324,7 +324,7 @@ window.onload = function() {
 	btnApplyProofSummary.addEventListener("click", function() {
 		const inputString = txtInputProofSummary.value;
 		try {
-			let svg = GalacticSvgGenerator.fromProofSummary(getFontHeigth(), inputString, "svg2", getPlain(), getCentered(), !getDotted(), getPaddingL(), getPaddingT(), getPaddingR(), getPaddingB(), getDebug());
+			let svg = GalacticSvgGenerator.fromProofSummary(getFontHeigth(), inputString, "svgProofSummary", getPlain(), getCentered(), !getDotted(), getPaddingL(), getPaddingT(), getPaddingR(), getPaddingB(), getDebug());
 			if (svg === undefined)
 				throw "conversion failed";
 			setTxtRaw(txtSvgStructural, svg);
